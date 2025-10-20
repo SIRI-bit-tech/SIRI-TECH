@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,21 +5,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-enum Role {
-  ADMIN
-}
-
-enum ProjectStatus {
-  DRAFT
-  PUBLISHED
-}
-
-enum ContactStatus {
-  NEW
-  READ
-  REPLIED
 }
 
 model User {
@@ -40,7 +22,7 @@ model User {
 model Project {
   id               String        @id @default(cuid())
   title            String
-  description      String        @db.Text
+  description      String
   shortDescription String
   technologies     String[]
   images           String[]
@@ -60,7 +42,7 @@ model Profile {
   id           String   @id @default(cuid())
   name         String
   title        String
-  bio          String   @db.Text
+  bio          String
   email        String
   phone        String?
   location     String?
@@ -81,7 +63,7 @@ model Contact {
   name      String
   email     String
   subject   String?
-  message   String        @db.Text
+  message   String
   status    ContactStatus @default(NEW)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -116,17 +98,32 @@ model PageView {
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  sessionId String   @unique
+  id        String    @id @default(cuid())
+  sessionId String    @unique
   userAgent String?
   ipAddress String?
   country   String?
   city      String?
   device    String?
   browser   String?
-  startTime DateTime @default(now())
+  startTime DateTime  @default(now())
   endTime   DateTime?
-  pageViews Int      @default(0)
+  pageViews Int       @default(0)
 
   @@map("sessions")
+}
+
+enum Role {
+  ADMIN
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  REPLIED
 }
