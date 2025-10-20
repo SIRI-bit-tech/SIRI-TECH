@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  REPLIED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Project {
+  id               String        @id @default(cuid())
+  title            String
+  description      String        @db.Text
+  shortDescription String
+  technologies     String[]
+  images           String[]
+  liveUrl          String?
+  githubUrl        String?
+  featured         Boolean       @default(false)
+  order            Int           @default(0)
+  status           ProjectStatus @default(DRAFT)
+  slug             String        @unique
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("projects")
+}
+
+model Profile {
+  id           String   @id @default(cuid())
+  name         String
+  title        String
+  bio          String   @db.Text
+  email        String
+  phone        String?
+  location     String?
+  profileImage String?
+  skills       String[]
+  experience   Json[]
+  education    Json[]
+  socialLinks  Json
+  resumeUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Contact {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String        @db.Text
+  status    ContactStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("contacts")
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  pageUrl   String
+  pageTitle String?
+  referrer  String?
+  userAgent String?
+  ipAddress String?
+  country   String?
+  city      String?
+  device    String?
+  browser   String?
+  sessionId String
+  timestamp DateTime @default(now())
+
+  @@map("analytics")
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  pageUrl   String
+  sessionId String
+  timestamp DateTime @default(now())
+
+  @@map("page_views")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  userAgent String?
+  ipAddress String?
+  country   String?
+  city      String?
+  device    String?
+  browser   String?
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  pageViews Int      @default(0)
+
+  @@map("sessions")
+}
