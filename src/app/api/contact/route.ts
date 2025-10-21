@@ -90,7 +90,7 @@ function sanitizeInput(input: string): string {
 }
 
 async function sendNotificationEmail(contactData: ContactFormData): Promise<void> {
-  const fromEmail = process.env.FROM_EMAIL || 'noreply@portfolio.com'
+  const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev'
   const toEmail = process.env.TO_EMAIL
 
   if (!toEmail) {
