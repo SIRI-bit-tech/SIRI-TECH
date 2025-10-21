@@ -12,3 +12,6 @@ export * from './glassmorphism'
 
 // Project Components
 export * from './projects'
+
+// Contact Components
+export { default as ContactForm } from './ContactForm'
