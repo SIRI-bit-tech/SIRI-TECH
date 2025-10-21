@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit')
     const offset = searchParams.get('offset')
 
-    const where: any = {
+    const where: Prisma.ProjectWhereInput = {
       status: status as 'PUBLISHED' | 'DRAFT'
     }
 
@@ -24,20 +25,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const totalCount = await prisma.project.count({ where })
+
     const projects = await prisma.project.findMany({
       where,
       orderBy: [
         { featured: 'desc' },
         { createdAt: 'desc' }
       ],
-      ...(limit && { take: parseInt(limit) }),
-      ...(offset && { skip: parseInt(offset) })
+      ...(limit && !isNaN(parseInt(limit)) && { take: Math.max(1, parseInt(limit)) }),
+      ...(offset && !isNaN(parseInt(offset)) && { skip: Math.max(0, parseInt(offset)) })
     })
 
     return NextResponse.json({
       success: true,
       data: projects,
-      count: projects.length
+      count: projects.length,
+      total: totalCount
     })
   } catch (error) {
     console.error('Error fetching projects:', error)
