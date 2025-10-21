@@ -55,6 +55,47 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Background utilities for glassmorphism */
+.bg-glass-light {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bg-glass-medium {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.bg-glass-heavy {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.bg-glass-dark {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.bg-glass-dark-medium {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.bg-glass-dark-heavy {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Border utilities for glassmorphism */
+.border-border-glass {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.border-border-glass-dark {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
 @media (prefers-color-scheme: dark) {
   .glass-nav {
     background: rgba(0, 0, 0, 0.8);
