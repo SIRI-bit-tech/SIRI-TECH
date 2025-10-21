@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import Navigation, { NavigationItem } from '../ui/Navigation'
 import Footer from './Footer'
 
@@ -9,15 +10,17 @@ interface PublicLayoutProps {
   className?: string
 }
 
-const navigationItems: NavigationItem[] = [
-  { label: 'Home', href: '/', active: true },
-  { label: 'Projects', href: '/projects' },
-  { label: 'About', href: '/about' },
-  { label: 'Resume', href: '/resume' },
-  { label: 'Contact', href: '/contact' },
-]
-
 const PublicLayout = ({ children, className }: PublicLayoutProps) => {
+  const pathname = usePathname()
+  
+  const navigationItems: NavigationItem[] = [
+    { label: 'Home', href: '/', active: pathname === '/' },
+    { label: 'Projects', href: '/projects', active: pathname.startsWith('/projects') },
+    { label: 'About', href: '/about', active: pathname === '/about' },
+    { label: 'Resume', href: '/resume', active: pathname === '/resume' },
+    { label: 'Contact', href: '/contact', active: pathname === '/contact' },
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Navigation 
