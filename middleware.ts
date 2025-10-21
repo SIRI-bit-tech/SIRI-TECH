@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
+import { analyticsMiddleware } from "@/lib/analytics-middleware"
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for public routes and API auth routes
+  // Run analytics tracking for public pages (non-admin, non-API)
+  if (
+    !pathname.startsWith("/admin") &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/_next") &&
+    !pathname.startsWith("/favicon")
+  ) {
+    // Track analytics for public pages
+    await analyticsMiddleware(request)
+  }
+
+  // Skip auth middleware for public routes and API auth routes
   if (
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/_next") ||

@@ -31,7 +31,9 @@
     "react-dom": "19.1.0",
     "resend": "^6.2.0",
     "tailwind-merge": "^3.3.1",
-    "uploadthing": "^7.7.4"
+    "ua-parser-js": "^2.0.6",
+    "uploadthing": "^7.7.4",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -39,6 +41,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/ua-parser-js": "^0.7.39",
     "eslint": "^9",
     "eslint-config-next": "15.5.6",
     "tailwindcss": "^4",
