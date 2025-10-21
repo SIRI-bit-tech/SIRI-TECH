@@ -1,59 +1,48 @@
-import { NextRequest, NextResponse } from "next/server"
-import { auth } from "./auth"
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from './auth'
 
-export async function withAuth(
-  request: NextRequest,
-  handler: (request: NextRequest, user: any) => Promise<NextResponse>
-) {
+export async function authMiddleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // Skip middleware for public routes and API auth routes
+  if (
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    pathname === '/admin/login' ||
+    !pathname.startsWith('/admin')
+  ) {
+    return NextResponse.next()
+  }
+
   try {
-    // Get session from the request
+    // Check if user is authenticated
     const session = await auth.api.getSession({
       headers: request.headers,
     })
 
     if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
+      // Redirect to login if not authenticated
+      const loginUrl = new URL('/admin/login', request.url)
+      return NextResponse.redirect(loginUrl)
     }
 
     // Check if user has admin role
-    const userRole = (session.user as any).role
-    if (userRole !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 }
-      )
+    if (session.user.role !== 'ADMIN') {
+      // Redirect to login if not admin
+      const loginUrl = new URL('/admin/login', request.url)
+      return NextResponse.redirect(loginUrl)
     }
 
-    return await handler(request, session.user)
+    return NextResponse.next()
   } catch (error) {
-    console.error("Auth middleware error:", error)
-    return NextResponse.json(
-      { error: "Authentication failed" },
-      { status: 401 }
-    )
+    console.error('Auth middleware error:', error)
+    // Redirect to login on any auth error
+    const loginUrl = new URL('/admin/login', request.url)
+    return NextResponse.redirect(loginUrl)
   }
 }
 
-export async function requireAuth(request: NextRequest) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    })
-
-    if (!session?.user) {
-      throw new Error("No session found")
-    }
-
-    const userRole = (session.user as any).role
-    if (userRole !== "ADMIN") {
-      throw new Error("Admin access required")
-    }
-
-    return session.user
-  } catch (error) {
-    throw new Error("Unauthorized")
-  }
+export const config = {
+  matcher: ['/admin/:path*']
 }
