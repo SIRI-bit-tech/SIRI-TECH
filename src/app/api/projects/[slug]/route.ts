@@ -12,7 +12,7 @@ export async function GET(
   { params }: RouteParams
 ) {
   try {
-    const project = await prisma.project.findUnique({
+    const project = await prisma.project.findFirst({
       where: {
         slug: params.slug,
         status: 'PUBLISHED'
