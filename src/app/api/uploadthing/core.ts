@@ -46,7 +46,7 @@ export const ourFileRouter = {
       return { uploadedBy: metadata.userId };
     }),
     
-  profileImageUploader: f({ image: { maxFileSize: "2MB", maxFileCount: 1 } })
+  profileImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(async ({ req }) => {
       const user = await getUser(req);
       if (!user) throw new UploadThingError("Unauthorized");
@@ -58,7 +58,7 @@ export const ourFileRouter = {
       return { uploadedBy: metadata.userId };
     }),
     
-  resumeUploader: f({ pdf: { maxFileSize: "4MB", maxFileCount: 1 } })
+  resumePdf: f({ pdf: { maxFileSize: "8MB", maxFileCount: 1 } })
     .middleware(async ({ req }) => {
       const user = await getUser(req);
       if (!user) throw new UploadThingError("Unauthorized");
