@@ -1,10 +1,25 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
+import { auth } from "@/lib/auth";
  
 const f = createUploadthing();
- 
-// Fake auth function - replace with your actual auth
-const auth = (req: Request) => ({ id: "fakeId" }); // Fake auth function
+
+// Auth function using better-auth
+const getUser = async (req: Request) => {
+  try {
+    const session = await auth.api.getSession({
+      headers: req.headers,
+    });
+    
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return null;
+    }
+    
+    return { id: session.user.id };
+  } catch (error) {
+    return null;
+  }
+};
  
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
@@ -13,7 +28,7 @@ export const ourFileRouter = {
     // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {
       // This code runs on your server before upload
-      const user = auth(req);
+      const user = await getUser(req);
  
       // If you throw, the user will not be able to upload
       if (!user) throw new UploadThingError("Unauthorized");
@@ -33,7 +48,7 @@ export const ourFileRouter = {
     
   profileImageUploader: f({ image: { maxFileSize: "2MB", maxFileCount: 1 } })
     .middleware(async ({ req }) => {
-      const user = auth(req);
+      const user = await getUser(req);
       if (!user) throw new UploadThingError("Unauthorized");
       return { userId: user.id };
     })
@@ -45,7 +60,7 @@ export const ourFileRouter = {
     
   resumeUploader: f({ pdf: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(async ({ req }) => {
-      const user = auth(req);
+      const user = await getUser(req);
       if (!user) throw new UploadThingError("Unauthorized");
       return { userId: user.id };
     })
