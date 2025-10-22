@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAnalyticsData } from '@/lib/analytics'
+import { getAnalyticsData, getAnalyticsDataWithFilters } from '@/lib/analytics'
 import { auth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -17,17 +17,67 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const days = parseInt(searchParams.get('days') || '30')
     
-    // Validate days parameter
-    if (days < 1 || days > 365) {
-      return NextResponse.json(
-        { error: 'Days parameter must be between 1 and 365' },
-        { status: 400 }
-      )
+    // Handle date range parameters
+    const startDateParam = searchParams.get('startDate')
+    const endDateParam = searchParams.get('endDate')
+    const daysParam = searchParams.get('days')
+    
+    let startDate: Date
+    let endDate: Date
+    
+    if (startDateParam && endDateParam) {
+      startDate = new Date(startDateParam)
+      endDate = new Date(endDateParam)
+      
+      // Validate date range
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid date format' },
+          { status: 400 }
+        )
+      }
+      
+      if (startDate > endDate) {
+        return NextResponse.json(
+          { error: 'Start date must be before end date' },
+          { status: 400 }
+        )
+      }
+      
+      // Limit to 2 years max
+      const maxRange = 2 * 365 * 24 * 60 * 60 * 1000 // 2 years in milliseconds
+      if (endDate.getTime() - startDate.getTime() > maxRange) {
+        return NextResponse.json(
+          { error: 'Date range cannot exceed 2 years' },
+          { status: 400 }
+        )
+      }
+    } else {
+      const days = parseInt(daysParam || '30')
+      
+      // Validate days parameter
+      if (days < 1 || days > 730) { // Max 2 years
+        return NextResponse.json(
+          { error: 'Days parameter must be between 1 and 730' },
+          { status: 400 }
+        )
+      }
+      
+      endDate = new Date()
+      startDate = new Date()
+      startDate.setDate(startDate.getDate() - days)
     }
     
-    const analyticsData = await getAnalyticsData(days)
+    // Get filter parameters
+    const filters = {
+      country: searchParams.get('country') || undefined,
+      device: searchParams.get('device') || undefined,
+      browser: searchParams.get('browser') || undefined,
+      page: searchParams.get('page') || undefined
+    }
+    
+    const analyticsData = await getAnalyticsDataWithFilters(startDate, endDate, filters)
     
     return NextResponse.json({
       success: true,

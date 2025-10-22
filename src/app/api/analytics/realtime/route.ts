@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getRealTimeAnalytics } from '@/lib/analytics'
+import { getRealTimeAnalytics, getHourlyAnalytics } from '@/lib/analytics'
 import { auth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
@@ -15,12 +15,40 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    const { searchParams } = new URL(request.url)
+    const includeHourly = searchParams.get('includeHourly') === 'true'
+    const hours = parseInt(searchParams.get('hours') || '24')
     
-    const realTimeData = await getRealTimeAnalytics()
+    // Validate hours parameter
+    if (hours < 1 || hours > 168) { // Max 1 week
+      return NextResponse.json(
+        { error: 'Hours parameter must be between 1 and 168' },
+        { status: 400 }
+      )
+    }
+    
+    const [realTimeData, hourlyData] = await Promise.all([
+      getRealTimeAnalytics(),
+      includeHourly ? getHourlyAnalytics(hours) : Promise.resolve([])
+    ])
+    
+    // Add performance indicators
+    const performanceIndicators = {
+      dataFreshness: new Date().toISOString(),
+      responseTime: Date.now(),
+      cacheStatus: 'live', // In production, this could indicate cache hit/miss
+      updateFrequency: '30s' // Configurable update frequency
+    }
     
     return NextResponse.json({
       success: true,
-      data: realTimeData
+      data: {
+        ...realTimeData,
+        hourlyData: includeHourly ? hourlyData : undefined,
+        performance: performanceIndicators,
+        timestamp: new Date().toISOString()
+      }
     })
     
   } catch (error) {
