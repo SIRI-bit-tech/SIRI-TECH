@@ -16,11 +16,11 @@ export async function GET(request: NextRequest) {
       )
     }
     
-    const realtimeData = await getRealTimeAnalytics()
+    const realTimeData = await getRealTimeAnalytics()
     
     return NextResponse.json({
       success: true,
-      data: realtimeData
+      data: realTimeData
     })
     
   } catch (error) {
