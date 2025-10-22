@@ -185,7 +185,7 @@ export default function ContactForm({ className }: ContactFormProps) {
                     </motion.div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 tablet:grid-cols-2 gap-6">
                     {/* Name Field */}
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -199,8 +199,9 @@ export default function ContactForm({ className }: ContactFormProps) {
                             className={cn(
                                 'w-full px-4 py-3 bg-glass-light dark:bg-glass-dark backdrop-blur-sm border rounded-lg',
                                 'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
-                                'transition-all duration-200',
+                                'transition-all duration-200 touch-manipulation min-h-[44px]',
                                 'text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400',
+                                'text-base', // Prevent zoom on iOS
                                 errors.name
                                     ? 'border-red-300 dark:border-red-600'
                                     : 'border-border-glass dark:border-border-glass-dark'
@@ -232,8 +233,9 @@ export default function ContactForm({ className }: ContactFormProps) {
                             className={cn(
                                 'w-full px-4 py-3 bg-glass-light dark:bg-glass-dark backdrop-blur-sm border rounded-lg',
                                 'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
-                                'transition-all duration-200',
+                                'transition-all duration-200 touch-manipulation min-h-[44px]',
                                 'text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400',
+                                'text-base', // Prevent zoom on iOS
                                 errors.email
                                     ? 'border-red-300 dark:border-red-600'
                                     : 'border-border-glass dark:border-border-glass-dark'
@@ -266,8 +268,9 @@ export default function ContactForm({ className }: ContactFormProps) {
                         className={cn(
                             'w-full px-4 py-3 bg-glass-light dark:bg-glass-dark backdrop-blur-sm border rounded-lg',
                             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
-                            'transition-all duration-200',
+                            'transition-all duration-200 touch-manipulation min-h-[44px]',
                             'text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400',
+                            'text-base', // Prevent zoom on iOS
                             errors.subject
                                 ? 'border-red-300 dark:border-red-600'
                                 : 'border-border-glass dark:border-border-glass-dark'
@@ -299,8 +302,9 @@ export default function ContactForm({ className }: ContactFormProps) {
                         className={cn(
                             'w-full px-4 py-3 bg-glass-light dark:bg-glass-dark backdrop-blur-sm border rounded-lg',
                             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
-                            'transition-all duration-200 resize-vertical',
+                            'transition-all duration-200 resize-vertical touch-manipulation',
                             'text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400',
+                            'text-base', // Prevent zoom on iOS
                             errors.message
                                 ? 'border-red-300 dark:border-red-600'
                                 : 'border-border-glass dark:border-border-glass-dark'
@@ -330,7 +334,7 @@ export default function ContactForm({ className }: ContactFormProps) {
                         size="lg"
                         loading={isSubmitting}
                         disabled={isSubmitting}
-                        className="min-w-[140px]"
+                        className="min-w-[140px] touch-manipulation min-h-[44px]"
                     >
                         {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
