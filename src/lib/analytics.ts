@@ -1,6 +1,9 @@
 import { headers } from 'next/headers'
 import { prisma } from './prisma'
 import { UAParser } from 'ua-parser-js'
+import { randomUUID } from 'crypto'
+import { Prisma } from '@prisma/client'
+
 
 export interface AnalyticsEvent {
   pageUrl: string
@@ -21,9 +24,9 @@ export interface VisitorInfo {
 /**
  * Generate a unique session ID based on IP and User Agent
  */
-export function generateSessionId(ipAddress: string, userAgent: string): string {
-  const hash = Buffer.from(`${ipAddress}-${userAgent}-${Date.now()}`).toString('base64')
-  return hash.substring(0, 32)
+
+export function generateSessionId(): string {
+  return randomUUID()
 }
 
 /**
@@ -32,7 +35,7 @@ export function generateSessionId(ipAddress: string, userAgent: string): string 
 export function parseUserAgent(userAgent: string) {
   const parser = new UAParser(userAgent)
   const result = parser.getResult()
-  
+
   return {
     device: result.device.type || 'desktop',
     browser: `${result.browser.name || 'Unknown'} ${result.browser.version || ''}`.trim(),
@@ -48,7 +51,7 @@ export async function getVisitorInfo(): Promise<VisitorInfo> {
   const userAgent = headersList.get('user-agent') || ''
   const forwarded = headersList.get('x-forwarded-for')
   const realIp = headersList.get('x-real-ip')
-  
+
   // Get IP address (handle proxy headers)
   let ipAddress = '127.0.0.1'
   if (forwarded) {
@@ -56,24 +59,26 @@ export async function getVisitorInfo(): Promise<VisitorInfo> {
   } else if (realIp) {
     ipAddress = realIp
   }
-  
+
   const { device, browser } = parseUserAgent(userAgent)
-  
+
   // Get geographic location
   let country: string | undefined
   let city: string | undefined
-  
+
   try {
-    if (ipAddress !== '127.0.0.1' && ipAddress !== '::1' && !ipAddress.startsWith('192.168.')) {
-      // Use ip-api.com for geographic location (free tier: 1000 requests/month)
+    const GEO_ENABLED = process.env.ANALYTICS_ENABLE_GEO === 'true'
+    if (GEO_ENABLED && ipAddress !== '127.0.0.1' && ipAddress !== '::1' && !ipAddress.startsWith('192.168.')) {
+      // Prefer HTTPS provider or local DB
+      const geoBaseUrl = process.env.GEO_BASE_URL || 'http://ip-api.com'
       const geoResponse = await fetch(
-        `http://ip-api.com/json/${ipAddress}?fields=status,country,city,timezone`,
-        { 
+        `${geoBaseUrl}/json/${ipAddress}?fields=status,country,city,timezone`,
+        {
           headers: { 'User-Agent': 'Portfolio-Analytics/1.0' },
-          signal: AbortSignal.timeout(3000) // 3 second timeout
+          signal: AbortSignal.timeout(3000)
         }
       )
-      
+
       if (geoResponse.ok) {
         const geoData = await geoResponse.json()
         if (geoData.status === 'success') {
@@ -85,7 +90,7 @@ export async function getVisitorInfo(): Promise<VisitorInfo> {
   } catch (error) {
     console.warn('Failed to get geographic location:', error)
   }
-  
+
   return {
     userAgent,
     ipAddress,
@@ -102,7 +107,7 @@ export async function getVisitorInfo(): Promise<VisitorInfo> {
 export async function trackPageView(event: AnalyticsEvent): Promise<void> {
   try {
     const visitorInfo = await getVisitorInfo()
-    
+
     // Create or update session
     await prisma.session.upsert({
       where: { sessionId: event.sessionId },
@@ -121,7 +126,7 @@ export async function trackPageView(event: AnalyticsEvent): Promise<void> {
         pageViews: 1
       }
     })
-    
+
     // Create analytics record
     await prisma.analytics.create({
       data: {
@@ -137,7 +142,7 @@ export async function trackPageView(event: AnalyticsEvent): Promise<void> {
         sessionId: event.sessionId
       }
     })
-    
+
     // Create page view record
     await prisma.pageView.create({
       data: {
@@ -145,7 +150,7 @@ export async function trackPageView(event: AnalyticsEvent): Promise<void> {
         sessionId: event.sessionId
       }
     })
-    
+
   } catch (error) {
     console.error('Failed to track page view:', error)
   }
@@ -155,8 +160,8 @@ export async function trackPageView(event: AnalyticsEvent): Promise<void> {
  * Get analytics data with advanced filtering
  */
 export async function getAnalyticsDataWithFilters(
-  startDate: Date, 
-  endDate: Date, 
+  startDate: Date,
+  endDate: Date,
   filters: {
     country?: string
     device?: string
@@ -169,30 +174,30 @@ export async function getAnalyticsDataWithFilters(
     const whereConditions: any = {
       timestamp: { gte: startDate, lte: endDate }
     }
-    
+
     const sessionWhereConditions: any = {
       startTime: { gte: startDate, lte: endDate }
     }
-    
+
     if (filters.country) {
       whereConditions.country = { contains: filters.country, mode: 'insensitive' }
       sessionWhereConditions.country = { contains: filters.country, mode: 'insensitive' }
     }
-    
+
     if (filters.device) {
       whereConditions.device = { contains: filters.device, mode: 'insensitive' }
       sessionWhereConditions.device = { contains: filters.device, mode: 'insensitive' }
     }
-    
+
     if (filters.browser) {
       whereConditions.browser = { contains: filters.browser, mode: 'insensitive' }
       sessionWhereConditions.browser = { contains: filters.browser, mode: 'insensitive' }
     }
-    
+
     if (filters.page) {
       whereConditions.pageUrl = { contains: filters.page, mode: 'insensitive' }
     }
-    
+
     // Get total page views with filters
     const totalViews = await prisma.pageView.count({
       where: {
@@ -200,12 +205,12 @@ export async function getAnalyticsDataWithFilters(
         ...(filters.page && { pageUrl: { contains: filters.page, mode: 'insensitive' } })
       }
     })
-    
+
     // Get unique visitors (sessions) with filters
     const uniqueVisitors = await prisma.session.count({
       where: sessionWhereConditions
     })
-    
+
     // Get top pages with filters
     const topPages = await prisma.pageView.groupBy({
       by: ['pageUrl'],
@@ -219,7 +224,7 @@ export async function getAnalyticsDataWithFilters(
       },
       take: 10
     })
-    
+
     // Get recent visitors with filters
     const recentVisitors = await prisma.analytics.findMany({
       where: whereConditions,
@@ -234,7 +239,7 @@ export async function getAnalyticsDataWithFilters(
       orderBy: { timestamp: 'desc' },
       take: 50
     })
-    
+
     // Get device statistics with filters
     const deviceStats = await prisma.session.groupBy({
       by: ['device'],
@@ -244,7 +249,7 @@ export async function getAnalyticsDataWithFilters(
         _count: { device: 'desc' }
       }
     })
-    
+
     // Get browser statistics with filters
     const browserStats = await prisma.session.groupBy({
       by: ['browser'],
@@ -254,23 +259,25 @@ export async function getAnalyticsDataWithFilters(
         _count: { browser: 'desc' }
       }
     })
-    
+
     // Get daily views for the chart with filters
-    const dailyViews = await prisma.$queryRaw<Array<{ date: string; views: number }>>`
-      SELECT 
-        DATE(timestamp) as date,
-        COUNT(*) as views
-      FROM page_views 
-      WHERE timestamp >= ${startDate} 
-        AND timestamp <= ${endDate}
-        ${filters.page ? prisma.$queryRaw`AND page_url ILIKE ${'%' + filters.page + '%'}` : prisma.$queryRaw``}
-      GROUP BY DATE(timestamp)
-      ORDER BY date ASC
-    `
-    
+    const pageFilter = filters.page
+       ? Prisma.sql`AND page_url ILIKE ${'%' + filters.page + '%'}`
+      : Prisma.empty
+    const dailyViews = await prisma.$queryRaw<Array<{ date: string; views: number }>>(
+       Prisma.sql`
+         SELECT DATE(timestamp) as date, COUNT(*) as views
+         FROM page_views
+         WHERE timestamp >= ${startDate} AND timestamp <= ${endDate}
+         ${pageFilter}
+         GROUP BY DATE(timestamp)
+         ORDER BY date ASC
+       `
+    )
+
     // Get performance metrics
     const performanceMetrics = await getPerformanceMetrics(startDate, endDate, filters)
-    
+
     return {
       totalViews,
       uniqueVisitors,
@@ -322,7 +329,7 @@ export async function getAnalyticsDataWithFilters(
 export async function getAnalyticsData(days: number = 30) {
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
-  
+
   try {
     // Get total page views
     const totalViews = await prisma.pageView.count({
@@ -330,14 +337,14 @@ export async function getAnalyticsData(days: number = 30) {
         timestamp: { gte: startDate }
       }
     })
-    
+
     // Get unique visitors (sessions)
     const uniqueVisitors = await prisma.session.count({
       where: {
         startTime: { gte: startDate }
       }
     })
-    
+
     // Get top pages
     const topPages = await prisma.pageView.groupBy({
       by: ['pageUrl'],
@@ -350,7 +357,7 @@ export async function getAnalyticsData(days: number = 30) {
       },
       take: 10
     })
-    
+
     // Get recent visitors
     const recentVisitors = await prisma.analytics.findMany({
       where: {
@@ -365,7 +372,7 @@ export async function getAnalyticsData(days: number = 30) {
       orderBy: { timestamp: 'desc' },
       take: 50
     })
-    
+
     // Get device statistics
     const deviceStats = await prisma.session.groupBy({
       by: ['device'],
@@ -377,7 +384,7 @@ export async function getAnalyticsData(days: number = 30) {
         _count: { device: 'desc' }
       }
     })
-    
+
     // Get browser statistics
     const browserStats = await prisma.session.groupBy({
       by: ['browser'],
@@ -389,7 +396,7 @@ export async function getAnalyticsData(days: number = 30) {
         _count: { browser: 'desc' }
       }
     })
-    
+
     // Get daily views for the chart
     const dailyViews = await prisma.$queryRaw<Array<{ date: string; views: number }>>`
       SELECT 
@@ -400,7 +407,7 @@ export async function getAnalyticsData(days: number = 30) {
       GROUP BY DATE(timestamp)
       ORDER BY date ASC
     `
-    
+
     return {
       totalViews,
       uniqueVisitors,
@@ -442,25 +449,25 @@ export async function getAnalyticsData(days: number = 30) {
 export async function getRealTimeAnalytics() {
   const last24Hours = new Date()
   last24Hours.setHours(last24Hours.getHours() - 24)
-  
+
   try {
     // Active sessions (sessions with activity in last 30 minutes)
     const last30Minutes = new Date()
     last30Minutes.setMinutes(last30Minutes.getMinutes() - 30)
-    
+
     const activeSessions = await prisma.session.count({
       where: {
         endTime: { gte: last30Minutes }
       }
     })
-    
+
     // Page views in last 24 hours
     const recentViews = await prisma.pageView.count({
       where: {
         timestamp: { gte: last24Hours }
       }
     })
-    
+
     // Recent page views with details
     const recentActivity = await prisma.analytics.findMany({
       where: {
@@ -478,7 +485,7 @@ export async function getRealTimeAnalytics() {
       orderBy: { timestamp: 'desc' },
       take: 20
     })
-    
+
     return {
       activeSessions,
       recentViews,
@@ -513,14 +520,14 @@ export async function getAnalyticsSummary(startDate: Date, endDate: Date) {
           timestamp: { gte: startDate, lte: endDate }
         }
       }),
-      
+
       // Unique visitors (sessions)
       prisma.session.count({
         where: {
           startTime: { gte: startDate, lte: endDate }
         }
       }),
-      
+
       // Average session duration
       prisma.session.aggregate({
         where: {
@@ -531,7 +538,7 @@ export async function getAnalyticsSummary(startDate: Date, endDate: Date) {
           pageViews: true
         }
       }),
-      
+
       // Bounce rate (sessions with only 1 page view)
       prisma.session.count({
         where: {
@@ -539,7 +546,7 @@ export async function getAnalyticsSummary(startDate: Date, endDate: Date) {
           pageViews: 1
         }
       }),
-      
+
       // Top countries
       prisma.session.groupBy({
         by: ['country'],
@@ -553,7 +560,7 @@ export async function getAnalyticsSummary(startDate: Date, endDate: Date) {
         },
         take: 10
       }),
-      
+
       // Top referrers
       prisma.analytics.groupBy({
         by: ['referrer'],
@@ -568,9 +575,9 @@ export async function getAnalyticsSummary(startDate: Date, endDate: Date) {
         take: 10
       })
     ])
-    
+
     const bounceRatePercentage = uniqueVisitors > 0 ? (bounceRate / uniqueVisitors) * 100 : 0
-    
+
     return {
       totalViews,
       uniqueVisitors,
@@ -604,7 +611,7 @@ export async function getAnalyticsSummary(startDate: Date, endDate: Date) {
 export async function getHourlyAnalytics(hours: number = 24) {
   const startDate = new Date()
   startDate.setHours(startDate.getHours() - hours)
-  
+
   try {
     const hourlyData = await prisma.$queryRaw<Array<{ hour: string; views: number; visitors: number }>>`
       SELECT 
@@ -616,7 +623,7 @@ export async function getHourlyAnalytics(hours: number = 24) {
       GROUP BY DATE_TRUNC('hour', timestamp)
       ORDER BY hour ASC
     `
-    
+
     return hourlyData.map(item => ({
       hour: item.hour,
       views: Number(item.views),
@@ -634,7 +641,7 @@ export async function getHourlyAnalytics(hours: number = 24) {
 export async function getPopularPages(days: number = 30) {
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
-  
+
   try {
     const popularPages = await prisma.$queryRaw<Array<{
       page_url: string;
@@ -654,7 +661,7 @@ export async function getPopularPages(days: number = 30) {
       ORDER BY views DESC
       LIMIT 20
     `
-    
+
     return popularPages.map(page => ({
       url: page.page_url,
       views: Number(page.views),
@@ -673,7 +680,7 @@ export async function getPopularPages(days: number = 30) {
 export async function cleanupOldAnalytics(retentionDays: number = 365) {
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
-  
+
   try {
     const [deletedAnalytics, deletedPageViews, deletedSessions] = await Promise.all([
       prisma.analytics.deleteMany({
@@ -692,7 +699,7 @@ export async function cleanupOldAnalytics(retentionDays: number = 365) {
         }
       })
     ])
-    
+
     return {
       deletedAnalytics: deletedAnalytics.count,
       deletedPageViews: deletedPageViews.count,
@@ -712,8 +719,8 @@ export async function cleanupOldAnalytics(retentionDays: number = 365) {
  * Get performance metrics for analytics optimization
  */
 export async function getPerformanceMetrics(
-  startDate: Date, 
-  endDate: Date, 
+  startDate: Date,
+  endDate: Date,
   filters: {
     country?: string
     device?: string
@@ -725,26 +732,26 @@ export async function getPerformanceMetrics(
     const whereConditions: any = {
       timestamp: { gte: startDate, lte: endDate }
     }
-    
+
     if (filters.country) {
       whereConditions.country = { contains: filters.country, mode: 'insensitive' }
     }
-    
+
     if (filters.device) {
       whereConditions.device = { contains: filters.device, mode: 'insensitive' }
     }
-    
+
     if (filters.browser) {
       whereConditions.browser = { contains: filters.browser, mode: 'insensitive' }
     }
-    
+
     if (filters.page) {
       whereConditions.pageUrl = { contains: filters.page, mode: 'insensitive' }
     }
-    
+
     // Get query performance metrics
     const startTime = Date.now()
-    
+
     const [
       totalRecords,
       avgResponseTime,
@@ -753,10 +760,10 @@ export async function getPerformanceMetrics(
     ] = await Promise.all([
       // Total records in date range
       prisma.analytics.count({ where: whereConditions }),
-      
+
       // Simulated response time (in real app, this would be actual metrics)
       Promise.resolve(Date.now() - startTime),
-      
+
       // Peak hour analysis
       prisma.$queryRaw<Array<{ hour: number; count: number }>>`
         SELECT 
@@ -769,11 +776,11 @@ export async function getPerformanceMetrics(
         ORDER BY count DESC
         LIMIT 1
       `,
-      
+
       // Estimate data size (rough calculation)
       prisma.analytics.count({ where: whereConditions }).then(count => count * 0.5) // Rough KB estimate
     ])
-    
+
     return {
       totalRecords,
       avgResponseTime,
@@ -807,7 +814,7 @@ export async function getPerformanceMetrics(
 export async function getVisitorFlow(days: number = 30) {
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
-  
+
   try {
     const flow = await prisma.$queryRaw<Array<{
       from_page: string;
@@ -833,7 +840,7 @@ export async function getVisitorFlow(days: number = 30) {
       ORDER BY transitions DESC
       LIMIT 50
     `
-    
+
     return flow.map(item => ({
       fromPage: item.from_page,
       toPage: item.to_page,
@@ -864,17 +871,17 @@ export async function getOptimizedAnalyticsData(
   } = {}
 ) {
   const { useCache = true, maxRecords = 10000, aggregateOnly = false } = options
-  
+
   try {
     // For large date ranges, use aggregated data only
     const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
     const shouldAggregate = aggregateOnly || daysDiff > 90 || maxRecords < 1000
-    
+
     if (shouldAggregate) {
       // Return only aggregated data for performance
       return await getAggregatedAnalyticsData(startDate, endDate, filters)
     }
-    
+
     // For smaller datasets, return full data
     return await getAnalyticsDataWithFilters(startDate, endDate, filters)
   } catch (error) {
@@ -901,7 +908,7 @@ export async function getAggregatedAnalyticsData(
     const whereConditions: any = {
       timestamp: { gte: startDate, lte: endDate }
     }
-    
+
     if (filters.country) {
       whereConditions.country = { contains: filters.country, mode: 'insensitive' }
     }
@@ -914,7 +921,7 @@ export async function getAggregatedAnalyticsData(
     if (filters.page) {
       whereConditions.pageUrl = { contains: filters.page, mode: 'insensitive' }
     }
-    
+
     // Use parallel queries for better performance
     const [
       totalViews,
@@ -930,7 +937,7 @@ export async function getAggregatedAnalyticsData(
           ...(filters.page && { pageUrl: { contains: filters.page, mode: 'insensitive' } })
         }
       }),
-      
+
       prisma.session.count({
         where: {
           startTime: { gte: startDate, lte: endDate },
@@ -939,7 +946,7 @@ export async function getAggregatedAnalyticsData(
           ...(filters.browser && { browser: { contains: filters.browser, mode: 'insensitive' } })
         }
       }),
-      
+
       prisma.pageView.groupBy({
         by: ['pageUrl'],
         _count: { pageUrl: true },
@@ -950,7 +957,7 @@ export async function getAggregatedAnalyticsData(
         orderBy: { _count: { pageUrl: 'desc' } },
         take: 10
       }),
-      
+
       prisma.session.groupBy({
         by: ['device'],
         _count: { device: true },
@@ -962,7 +969,7 @@ export async function getAggregatedAnalyticsData(
         },
         orderBy: { _count: { device: 'desc' } }
       }),
-      
+
       prisma.session.groupBy({
         by: ['browser'],
         _count: { browser: true },
@@ -974,21 +981,20 @@ export async function getAggregatedAnalyticsData(
         },
         orderBy: { _count: { browser: 'desc' } }
       }),
-      
+
       // Weekly aggregation for large date ranges
-      prisma.$queryRaw<Array<{ week: string; views: number }>>`
-        SELECT 
-          DATE_TRUNC('week', timestamp) as week,
-          COUNT(*) as views
-        FROM page_views 
-        WHERE timestamp >= ${startDate} 
-          AND timestamp <= ${endDate}
-          ${filters.page ? prisma.$queryRaw`AND page_url ILIKE ${'%' + filters.page + '%'}` : prisma.$queryRaw``}
-        GROUP BY DATE_TRUNC('week', timestamp)
-        ORDER BY week ASC
-      `
+      prisma.$queryRaw<Array<{ week: string; views: number }>>(
+        Prisma.sql`
+          SELECT DATE_TRUNC('week', timestamp) as week, COUNT(*) as views
+          FROM page_views
+          WHERE timestamp >= ${startDate} AND timestamp <= ${endDate}
+          ${filters.page ? Prisma.sql`AND page_url ILIKE ${'%' + filters.page + '%'}` : Prisma.empty}
+          GROUP BY DATE_TRUNC('week', timestamp)
+          ORDER BY week ASC
+        `
+              )
     ])
-    
+
     return {
       totalViews,
       uniqueVisitors,
@@ -1029,20 +1035,20 @@ export async function batchProcessAnalytics(
 ) {
   try {
     const results = []
-    
+
     for (let i = 0; i < events.length; i += batchSize) {
       const batch = events.slice(i, i + batchSize)
-      
+
       // Process batch in parallel
       const batchPromises = batch.map(event => trackPageView(event))
       const batchResults = await Promise.allSettled(batchPromises)
-      
+
       results.push(...batchResults)
     }
-    
+
     const successful = results.filter(r => r.status === 'fulfilled').length
     const failed = results.filter(r => r.status === 'rejected').length
-    
+
     return {
       total: events.length,
       successful,
@@ -1061,7 +1067,7 @@ export async function batchProcessAnalytics(
 export async function getAnalyticsPerformanceInsights(days: number = 30) {
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
-  
+
   try {
     const [
       dataGrowthRate,
@@ -1071,17 +1077,17 @@ export async function getAnalyticsPerformanceInsights(days: number = 30) {
     ] = await Promise.all([
       // Calculate data growth rate
       calculateDataGrowthRate(startDate),
-      
+
       // Analyze query complexity
       analyzeQueryComplexity(),
-      
+
       // Check storage efficiency
       calculateStorageEfficiency(),
-      
+
       // Evaluate index effectiveness
       evaluateIndexEffectiveness()
     ])
-    
+
     return {
       dataGrowthRate,
       queryComplexity,
@@ -1104,7 +1110,7 @@ export async function getAnalyticsPerformanceInsights(days: number = 30) {
 async function calculateDataGrowthRate(startDate: Date) {
   try {
     const midDate = new Date(startDate.getTime() + (Date.now() - startDate.getTime()) / 2)
-    
+
     const [firstHalf, secondHalf] = await Promise.all([
       prisma.analytics.count({
         where: { timestamp: { gte: startDate, lt: midDate } }
@@ -1113,9 +1119,9 @@ async function calculateDataGrowthRate(startDate: Date) {
         where: { timestamp: { gte: midDate, lte: new Date() } }
       })
     ])
-    
+
     const growthRate = firstHalf > 0 ? ((secondHalf - firstHalf) / firstHalf) * 100 : 0
-    
+
     return {
       firstHalf,
       secondHalf,
@@ -1136,7 +1142,7 @@ async function analyzeQueryComplexity() {
       { type: 'join', complexity: 'low', frequency: 'medium' },
       { type: 'filtering', complexity: 'low', frequency: 'high' }
     ]
-    
+
     return {
       averageComplexity: 'medium',
       mostFrequent: 'aggregation',
@@ -1154,7 +1160,7 @@ async function calculateStorageEfficiency() {
       prisma.analytics.count(),
       prisma.analytics.count().then(count => count * 0.5) // Rough size estimation in KB
     ])
-    
+
     return {
       totalRecords,
       estimatedSizeKB: Math.round(estimatedSize),
@@ -1184,7 +1190,7 @@ async function evaluateIndexEffectiveness() {
 
 function generatePerformanceRecommendations(insights: any) {
   const recommendations = []
-  
+
   if (insights.dataGrowthRate.growthRate > 20) {
     recommendations.push({
       type: 'data_management',
@@ -1193,7 +1199,7 @@ function generatePerformanceRecommendations(insights: any) {
       action: 'setup_archiving'
     })
   }
-  
+
   if (insights.storageEfficiency.efficiency === 'poor') {
     recommendations.push({
       type: 'storage',
@@ -1202,7 +1208,7 @@ function generatePerformanceRecommendations(insights: any) {
       action: 'optimize_storage'
     })
   }
-  
+
   if (insights.indexEffectiveness.missingIndexes.length > 0) {
     recommendations.push({
       type: 'performance',
@@ -1211,6 +1217,6 @@ function generatePerformanceRecommendations(insights: any) {
       action: 'create_indexes'
     })
   }
-  
+
   return recommendations
 }

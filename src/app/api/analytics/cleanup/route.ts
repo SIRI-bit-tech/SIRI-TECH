@@ -18,13 +18,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const {
-      retentionDays = 365,
-      dryRun = false,
-      aggressive = false,
-      compactData = false
-    } = body
-    
+    let { retentionDays = 365, dryRun = false, aggressive = false, compactData = false } = body ?? {}
+    retentionDays = Number(retentionDays)
+    if (!Number.isInteger(retentionDays)) {
+      return NextResponse.json({ error: 'retentionDays must be an integer' }, { status: 400 })
+    }
+    dryRun = Boolean(dryRun)
+    aggressive = Boolean(aggressive)
+    compactData = Boolean(compactData)
+
     // Validate retention days
     if (retentionDays < 30 || retentionDays > 1095) { // Min 30 days, max 3 years
       return NextResponse.json(
@@ -32,38 +34,38 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    
+
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
-    
+
     // Get current database size before cleanup
     const beforeMetrics = await getDataSizeMetrics()
-    
-    let result
+
+    let result: any
     if (dryRun) {
       // Simulate cleanup without actually deleting
       result = await simulateCleanup(cutoffDate, aggressive)
     } else {
       // Perform actual cleanup
       result = await cleanupOldAnalytics(retentionDays)
-      
+
       // If aggressive cleanup is enabled, also remove duplicate entries
       if (aggressive) {
         const duplicateCleanup = await removeDuplicateEntries()
         result.duplicatesRemoved = duplicateCleanup.count
       }
-      
+
       // If data compaction is enabled, optimize database
       if (compactData) {
         await compactAnalyticsData()
         result.dataCompacted = true
       }
     }
-    
+
     // Get database size after cleanup
     const afterMetrics = await getDataSizeMetrics()
     const spaceSaved = beforeMetrics.totalSize - afterMetrics.totalSize
-    
+
     return NextResponse.json({
       success: true,
       data: {
@@ -79,16 +81,16 @@ export async function POST(request: NextRequest) {
           beforeSize: beforeMetrics,
           afterSize: afterMetrics,
           spaceSavedKB: Math.max(0, spaceSaved),
-          spaceSavedPercentage: beforeMetrics.totalSize > 0 
-            ? ((spaceSaved / beforeMetrics.totalSize) * 100).toFixed(2)
+          spaceSavedPercentage: beforeMetrics.totalSize > 0
+            ? Math.max(0, (spaceSaved / beforeMetrics.totalSize) * 100).toFixed(2)
             : '0'
         }
       },
-      message: dryRun 
+      message: dryRun
         ? `Dry run: Would clean up analytics data older than ${retentionDays} days`
         : `Cleaned up analytics data older than ${retentionDays} days`
     })
-    
+
   } catch (error) {
     console.error('Analytics cleanup error:', error)
     return NextResponse.json(
@@ -115,7 +117,7 @@ export async function GET(request: NextRequest) {
 
     const metrics = await getDataSizeMetrics()
     const recommendations = await getCleanupRecommendations()
-    
+
     return NextResponse.json({
       success: true,
       data: {
@@ -129,7 +131,7 @@ export async function GET(request: NextRequest) {
         }
       }
     })
-    
+
   } catch (error) {
     console.error('Analytics cleanup status error:', error)
     return NextResponse.json(
@@ -147,12 +149,12 @@ async function getDataSizeMetrics() {
       prisma.pageView.count(),
       prisma.session.count()
     ])
-    
+
     // Rough size estimation (in KB)
     const analyticsSize = analyticsCount * 0.5 // ~500 bytes per record
     const pageViewsSize = pageViewsCount * 0.2 // ~200 bytes per record
     const sessionsSize = sessionsCount * 0.3 // ~300 bytes per record
-    
+
     return {
       analytics: { count: analyticsCount, sizeKB: Math.round(analyticsSize) },
       pageViews: { count: pageViewsCount, sizeKB: Math.round(pageViewsSize) },
@@ -183,13 +185,13 @@ async function simulateCleanup(cutoffDate: Date, aggressive: boolean) {
         where: { startTime: { lt: cutoffDate } }
       })
     ])
-    
+
     let duplicatesCount = 0
     if (aggressive) {
       // Simulate duplicate detection
       duplicatesCount = Math.floor(analyticsCount * 0.05) // Assume 5% duplicates
     }
-    
+
     return {
       deletedAnalytics: analyticsCount,
       deletedPageViews: pageViewsCount,
@@ -219,7 +221,7 @@ async function removeDuplicateEntries() {
         AND a1.page_url = a2.page_url 
         AND ABS(EXTRACT(EPOCH FROM (a1.timestamp - a2.timestamp))) < 60
     `
-    
+
     return { count: result }
   } catch (error) {
     console.error('Failed to remove duplicates:', error)
@@ -243,10 +245,10 @@ async function getCleanupRecommendations() {
   try {
     const oneYearAgo = new Date()
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
-    
+
     const twoYearsAgo = new Date()
     twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
-    
+
     const [oldDataCount, veryOldDataCount, totalCount] = await Promise.all([
       prisma.analytics.count({
         where: { timestamp: { lt: oneYearAgo } }
@@ -256,9 +258,9 @@ async function getCleanupRecommendations() {
       }),
       prisma.analytics.count()
     ])
-    
+
     const recommendations = []
-    
+
     if (veryOldDataCount > 0) {
       recommendations.push({
         type: 'urgent',
@@ -267,7 +269,7 @@ async function getCleanupRecommendations() {
         retentionDays: 730
       })
     }
-    
+
     if (oldDataCount > 1000) {
       recommendations.push({
         type: 'warning',
@@ -276,7 +278,7 @@ async function getCleanupRecommendations() {
         retentionDays: 365
       })
     }
-    
+
     if (totalCount > 100000) {
       recommendations.push({
         type: 'info',
@@ -285,7 +287,7 @@ async function getCleanupRecommendations() {
         options: ['aggressive', 'compactData']
       })
     }
-    
+
     return recommendations
   } catch (error) {
     console.error('Failed to get cleanup recommendations:', error)
@@ -301,7 +303,7 @@ async function getLastCleanupDate() {
       orderBy: { timestamp: 'asc' },
       select: { timestamp: true }
     })
-    
+
     return oldestRecord?.timestamp?.toISOString() || null
   } catch (error) {
     console.error('Failed to get last cleanup date:', error)

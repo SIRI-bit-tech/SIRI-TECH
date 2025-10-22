@@ -161,7 +161,7 @@ export function useAnalyticsWithFallback(options: UseAnalyticsStreamOptions = {}
   const streamResult = useAnalyticsStream(options)
   const [pollingData, setPollingData] = useState<AnalyticsStreamData | null>(null)
   const [usePolling, setUsePolling] = useState(false)
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const { enabled = true, interval = 30000 } = options
 
