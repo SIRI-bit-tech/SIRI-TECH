@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UploadDropzone } from '@/lib/uploadthing'
 import Button from '@/components/ui/Button'
+import { deleteFileByUrl, extractFileKey } from '@/lib/file-utils'
 
 interface ImageUploadProps {
   images: string[]
@@ -26,7 +27,16 @@ export function ImageUpload({ images, onChange, maxImages = 10 }: ImageUploadPro
     setUploading(false)
   }
 
-  const removeImage = (index: number) => {
+  const removeImage = async (index: number) => {
+    const imageUrl = images[index]
+    
+    // Delete from UploadThing
+    const result = await deleteFileByUrl(imageUrl)
+    if (!result.success) {
+      console.error('Failed to delete file from UploadThing:', result.error)
+      // Continue with local removal even if remote deletion fails
+    }
+    
     const newImages = images.filter((_, i) => i !== index)
     onChange(newImages)
   }

@@ -5,6 +5,7 @@ import { UploadButton } from '@/lib/uploadthing'
 import { Camera, X, User } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { deleteFileByUrl } from '@/lib/file-utils'
 
 interface ProfileImageUploadProps {
   currentImage?: string
@@ -29,7 +30,15 @@ export function ProfileImageUpload({ currentImage, onImageUpdate }: ProfileImage
     setUploading(false)
   }
 
-  const handleRemoveImage = () => {
+  const handleRemoveImage = async () => {
+    if (currentImage) {
+      // Delete from UploadThing
+      const result = await deleteFileByUrl(currentImage)
+      if (!result.success) {
+        console.error('Failed to delete file from UploadThing:', result.error)
+        setError('Failed to delete image from storage, but removing from profile')
+      }
+    }
     onImageUpdate('')
   }
 
