@@ -54,10 +54,11 @@ export async function GET(request: NextRequest) {
         )
       }
     } else {
-      const days = parseInt(daysParam || '30')
+      const parsed = Number(daysParam ?? '30')
+      const days = Number.isFinite(parsed) && Number.isInteger(parsed) ? parsed : NaN
       
       // Validate days parameter
-      if (days < 1 || days > 730) { // Max 2 years
+      if (!Number.isInteger(days) || days < 1 || days > 730) { // Max 2 years
         return NextResponse.json(
           { error: 'Days parameter must be between 1 and 730' },
           { status: 400 }

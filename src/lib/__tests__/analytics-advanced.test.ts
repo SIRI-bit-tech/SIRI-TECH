@@ -202,11 +202,9 @@ describe('Advanced Analytics Features', () => {
         { pageUrl: '/page3', sessionId: 'session3' }
       ]
       
-      // Mock the trackPageView function to resolve successfully
-      jest.doMock('../analytics', () => ({
-        ...jest.requireActual('../analytics'),
-        trackPageView: jest.fn().mockResolvedValue(undefined)
-      }))
+        // Spy on the exported trackPageView to avoid real I/O
+        const analyticsModule = await import('../analytics')
+        jest.spyOn(analyticsModule, 'trackPageView').mockResolvedValue(undefined as any)
       
       const result = await batchProcessAnalytics(events, 2)
       
