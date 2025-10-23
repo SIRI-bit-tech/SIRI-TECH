@@ -16,22 +16,22 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <PublicLayout>
-      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-12 xs:py-16 tablet:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="text-center mb-8 xs:mb-12">
+          <h1 className="text-3xl xs:text-4xl tablet:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             Get In Touch
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg xs:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4 sm:px-0">
             I'm always interested in new opportunities, collaborations, and interesting projects. 
             Let's discuss how we can work together.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 tablet-lg:grid-cols-3 gap-6 xs:gap-8">
           {/* Contact Information */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="tablet-lg:col-span-1 space-y-4 xs:space-y-6">
             <div className="bg-glass-medium backdrop-blur-md border border-border-glass dark:border-border-glass-dark rounded-xl p-6">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
                 Let's Connect
@@ -91,7 +91,7 @@ export default function ContactPage() {
           </div>
 
           {/* Contact Form */}
-          <div className="lg:col-span-2">
+          <div className="tablet-lg:col-span-2">
             <ContactForm />
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function ContactPage() {
             <p className="text-gray-600 dark:text-gray-300 mb-6">
               You can also find me on these platforms or check out my work directly.
             </p>
-            <div className="flex justify-center space-x-6">
+            <div className="flex flex-wrap justify-center gap-4 xs:gap-6">
               <a
                 href="https://github.com"
                 target="_blank"

@@ -123,7 +123,7 @@ const ProjectGallery = ({
                 />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-6">
+              <div className="flex flex-col tablet:flex-row gap-6">
                 {/* Technology Filter */}
                 {showFilters && (
                   <div className="flex-1">
@@ -135,6 +135,7 @@ const ProjectGallery = ({
                         variant={filterBy === 'all' ? 'primary' : 'ghost'}
                         size="sm"
                         onClick={() => setFilterBy('all')}
+                        className="touch-manipulation"
                       >
                         All ({projects.filter(p => p.status === 'PUBLISHED').length})
                       </Button>
@@ -148,6 +149,7 @@ const ProjectGallery = ({
                             variant={filterBy === tech ? 'primary' : 'ghost'}
                             size="sm"
                             onClick={() => setFilterBy(tech)}
+                            className="touch-manipulation"
                           >
                             {tech} ({count})
                           </Button>
@@ -159,7 +161,7 @@ const ProjectGallery = ({
 
                 {/* Sort Options */}
                 {showSorting && (
-                  <div className="sm:w-48">
+                  <div className="tablet:w-48">
                     <label htmlFor="sort" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Sort by
                     </label>
@@ -167,7 +169,7 @@ const ProjectGallery = ({
                       id="sort"
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as SortOption)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all touch-manipulation min-h-[44px]"
                     >
                       <option value="newest">Newest First</option>
                       <option value="oldest">Oldest First</option>
@@ -206,7 +208,7 @@ const ProjectGallery = ({
           {filteredAndSortedProjects.length > 0 ? (
             <motion.div
               key={`${sortBy}-${filterBy}-${searchQuery}`}
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
+              className="grid grid-cols-1 tablet:grid-cols-2 xl:grid-cols-3 gap-6 tablet:gap-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}

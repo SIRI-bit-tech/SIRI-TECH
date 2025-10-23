@@ -56,7 +56,7 @@ const ProjectCard = ({ project, index = 0 }: ProjectCardProps) => {
         hover={false}
       >
         {/* Project Image */}
-        <div className="relative h-48 sm:h-56 bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/20 dark:to-purple-900/20 overflow-hidden">
+        <div className="relative h-48 xs:h-52 sm:h-56 tablet:h-48 lg:h-56 bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/20 dark:to-purple-900/20 overflow-hidden">
           {project.images && project.images.length > 0 ? (
             <motion.div
               className="relative w-full h-full"
@@ -180,7 +180,7 @@ const ProjectCard = ({ project, index = 0 }: ProjectCardProps) => {
               <Button
                 variant="primary"
                 size="sm"
-                className="w-full"
+                className="w-full touch-manipulation min-h-[44px]"
               >
                 View Details
               </Button>
@@ -195,7 +195,7 @@ const ProjectCard = ({ project, index = 0 }: ProjectCardProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="px-3"
+                  className="px-3 touch-manipulation min-h-[44px] min-w-[44px]"
                   title="View Source Code"
                 >
                   <span className="text-lg">📚</span>

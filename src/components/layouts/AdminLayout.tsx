@@ -76,7 +76,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-slate-800/50 backdrop-blur-xl border-r border-slate-700/50
-        transform transition-transform duration-300 ease-in-out lg:translate-x-0
+        transform transition-transform duration-300 ease-in-out tablet-lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex flex-col h-full">
@@ -85,7 +85,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <h1 className="text-xl font-bold text-white">Admin Panel</h1>
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-white"
+              className="tablet-lg:hidden text-slate-400 hover:text-white touch-manipulation p-2"
             >
               <X size={24} />
             </button>
@@ -135,13 +135,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:ml-64">
+      <div className="tablet-lg:ml-64">
         {/* Top bar */}
         <header className="bg-slate-800/50 backdrop-blur-xl border-b border-slate-700/50 px-6 py-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden text-slate-400 hover:text-white"
+              className="tablet-lg:hidden text-slate-400 hover:text-white touch-manipulation p-2"
             >
               <Menu size={24} />
             </button>

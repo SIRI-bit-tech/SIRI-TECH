@@ -43,27 +43,27 @@ export default async function ProjectsPage() {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-12 xs:py-16 tablet:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="text-center mb-16">
-            <div className="inline-block mb-6">
+          <div className="text-center mb-12 xs:mb-16">
+            <div className="inline-block mb-4 xs:mb-6">
               <GlassmorphismCard 
                 variant="light" 
-                className="px-6 py-3 inline-block"
+                className="px-4 xs:px-6 py-2 xs:py-3 inline-block"
                 animate={false}
               >
-                <span className="text-primary-600 dark:text-primary-400 font-medium">
+                <span className="text-primary-600 dark:text-primary-400 font-medium text-sm xs:text-base">
                   💼 Portfolio
                 </span>
               </GlassmorphismCard>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 xs:mb-6 leading-tight">
               My Projects
             </h1>
             
-            <p className="max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="max-w-3xl mx-auto text-base xs:text-lg text-gray-600 dark:text-gray-400 leading-relaxed px-4 sm:px-0">
               A collection of my work showcasing full-stack web applications, 
               built with modern technologies and best practices. Each project 
               demonstrates different aspects of web development from frontend 
