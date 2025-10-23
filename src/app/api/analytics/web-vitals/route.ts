@@ -4,32 +4,38 @@ import { prisma } from '@/lib/prisma'
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
   const realIP = request.headers.get('x-real-ip')
-  
+
   if (forwarded) {
     return forwarded.split(',')[0].trim()
   }
-  
+
   if (realIP) {
     return realIP
   }
-  
+
   return 'unknown'
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
     const {
-      type,
-      duration,
-      startTime,
+      name,
+      value,
+      id,
+      label,
+      delta,
+      navigationType,
+      rating,
       url,
+      pathname,
       timestamp,
+      userAgent,
     } = body
 
     // Validate required fields
-    if (!type || !url || !timestamp) {
+    if (!name || value === undefined || !id || !url) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -38,23 +44,37 @@ export async function POST(request: NextRequest) {
 
     const clientIP = getClientIP(request)
 
-    // Store performance data (you might want to create a separate table for this)
+    // Store web vitals data in analytics table (WebVital model may need client regeneration)
     await prisma.analytics.create({
       data: {
         pageUrl: url,
-        pageTitle: `Performance: ${type}${duration ? ` (${Math.round(duration)}ms)` : ''}`,
-        userAgent: request.headers.get('user-agent') || null,
+        pageTitle: `Web Vital: ${name} - ${value}${rating ? ` (${rating})` : ''}`,
+        userAgent: userAgent || request.headers.get('user-agent') || null,
         ipAddress: clientIP,
-        sessionId: `perf-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+        sessionId: `wv-${id}`,
         timestamp: new Date(timestamp),
       }
     })
 
+    // Also create an analytics entry for tracking
+    await prisma.analytics.create({
+      data: {
+        pageUrl: pathname || url,
+        pageTitle: `Web Vital: ${name}`,
+        userAgent: userAgent || request.headers.get('user-agent') || null,
+        ipAddress: clientIP,
+        sessionId: `wv-${id}`,
+        timestamp: new Date(timestamp),
+      }
+    }).catch(() => {
+      // Silent fail for analytics entry
+    })
+
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error storing performance data:', error)
+    console.error('Error storing web vitals:', error)
     return NextResponse.json(
-      { error: 'Failed to store performance data' },
+      { error: 'Failed to store web vitals' },
       { status: 500 }
     )
   }

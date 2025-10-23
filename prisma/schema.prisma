@@ -113,6 +113,26 @@ model Session {
   @@map("sessions")
 }
 
+model WebVital {
+  id             String   @id @default(cuid())
+  name           String   // CLS, FID, FCP, LCP, TTFB, etc.
+  value          Float
+  metricId       String   @map("id_field") // The metric's unique ID
+  label          String?  // Optional label
+  delta          Float?   // Delta from previous value
+  navigationType String?  // Navigation type
+  rating         String?  // good, needs-improvement, poor
+  url            String   // Page URL where metric was recorded
+  timestamp      DateTime
+  userAgent      String?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  @@map("web_vitals")
+  @@index([name, timestamp])
+  @@index([url, timestamp])
+}
+
 enum Role {
   ADMIN
 }

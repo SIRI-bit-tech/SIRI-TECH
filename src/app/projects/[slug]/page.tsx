@@ -7,6 +7,8 @@ import PublicLayout from '@/components/layouts/PublicLayout'
 import GlassmorphismCard from '@/components/glassmorphism/GlassmorphismCard'
 import Button from '@/components/ui/Button'
 import { ProjectGallery } from '@/components/projects'
+import Breadcrumb from '@/components/seo/Breadcrumb'
+import { generateMetadata as generateSEOMetadata, generateProjectSchema } from '@/lib/seo'
 
 interface ProjectPageProps {
   params: {
@@ -55,45 +57,25 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   const project = await getProject(params.slug)
   
   if (!project) {
-    return {
-      title: 'Project Not Found | SIRI DEV Portfolio'
-    }
+    return generateSEOMetadata({
+      title: 'Project Not Found',
+      description: 'The requested project could not be found.',
+      noIndex: true,
+    })
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'
-  const projectUrl = `${siteUrl}/projects/${project.slug}`
-  const imageUrl = project.images?.[0] || `${siteUrl}/api/og?title=${encodeURIComponent(project.title)}`
-
-  return {
-    title: `${project.title} | SIRI DEV Portfolio`,
+  return generateSEOMetadata({
+    title: project.title,
     description: project.shortDescription,
-    keywords: ['project', 'portfolio', ...project.technologies],
-    openGraph: {
-      title: project.title,
-      description: project.shortDescription,
-      type: 'article',
-      url: projectUrl,
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: project.title,
-        }
-      ],
-      publishedTime: project.createdAt.toISOString(),
-      modifiedTime: project.updatedAt.toISOString(),
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: project.title,
-      description: project.shortDescription,
-      images: [imageUrl],
-    },
-    alternates: {
-      canonical: projectUrl,
-    },
-  }
+    keywords: ['project', 'portfolio', 'case study', ...project.technologies],
+    url: `/projects/${project.slug}`,
+    type: 'article',
+    image: project.images?.[0],
+    publishedTime: project.createdAt.toISOString(),
+    modifiedTime: project.updatedAt.toISOString(),
+    section: 'Projects',
+    tags: project.technologies,
+  })
 }
 
 export async function generateStaticParams() {
@@ -126,25 +108,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
-          <nav className="mb-8">
-            <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <Link href="/" className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>/</li>
-              <li>
-                <Link href="/projects" className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                  Projects
-                </Link>
-              </li>
-              <li>/</li>
-              <li className="text-gray-900 dark:text-white font-medium">
-                {project.title}
-              </li>
-            </ol>
-          </nav>
+          <Breadcrumb 
+            items={[
+              { name: 'Projects', url: '/projects' },
+              { name: project.title, url: `/projects/${project.slug}`, current: true }
+            ]}
+            className="mb-8"
+          />
 
           {/* Project Header */}
           <div className="mb-12">
@@ -298,32 +268,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "CreativeWork",
-                "name": project.title,
-                "description": project.description,
-                "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'}/projects/${project.slug}`,
-                "dateCreated": project.createdAt.toISOString(),
-                "dateModified": project.updatedAt.toISOString(),
-                "keywords": project.technologies.join(", "),
-                "creator": {
-                  "@type": "Person",
-                  "name": "SIRI DEV",
-                  "url": process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'
-                },
-                ...(project.images && project.images.length > 0 && {
-                  "image": project.images.map(img => ({
-                    "@type": "ImageObject",
-                    "url": img,
-                    "description": `${project.title} screenshot`
-                  }))
-                }),
-                ...(project.liveUrl && { "sameAs": project.liveUrl }),
-                "about": project.technologies.map(tech => ({
-                  "@type": "Thing",
-                  "name": tech
-                }))
+              __html: generateProjectSchema({
+                ...project,
+                liveUrl: project.liveUrl || undefined,
+                githubUrl: project.githubUrl || undefined,
+                images: project.images || undefined,
               })
             }}
           />
