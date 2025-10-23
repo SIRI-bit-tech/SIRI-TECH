@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Button from '@/components/ui/Button'
 import GlassmorphismCard from '@/components/glassmorphism/GlassmorphismCard'
+import { useApiFormSubmission } from '@/hooks/useFormSubmission'
+import FormLoadingState from '@/components/ui/FormLoadingState'
+import ErrorDisplay from '@/components/ui/ErrorDisplay'
 import { ContactFormData, ApiResponse } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -28,9 +31,20 @@ export default function ContactForm({ className }: ContactFormProps) {
     })
 
     const [errors, setErrors] = useState<FormErrors>({})
-    const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
     const [honeypot, setHoneypot] = useState('')
+
+    // Form submission with built-in error handling and toasts
+    const { state, submitToApi } = useApiFormSubmission('/api/contact', {
+        successMessage: 'Your message has been sent successfully! I\'ll get back to you soon.',
+        onSuccess: () => {
+            setIsSubmitted(true)
+            setFormData({ name: '', email: '', subject: '', message: '' })
+        },
+        onError: (error) => {
+            setErrors({ general: error })
+        }
+    })
 
     // Real-time validation
     const validateField = (name: keyof ContactFormData, value: string): string | undefined => {
@@ -92,33 +106,9 @@ export default function ContactForm({ className }: ContactFormProps) {
             return
         }
 
-        setIsSubmitting(true)
         setErrors({})
 
-        try {
-            const response = await fetch('/api/contact', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-
-            const result: ApiResponse = await response.json()
-
-            if (!response.ok) {
-                throw new Error(result.error || 'Failed to send message')
-            }
-
-            setIsSubmitted(true)
-            setFormData({ name: '', email: '', subject: '', message: '' })
-        } catch (error) {
-            setErrors({
-                general: error instanceof Error ? error.message : 'Failed to send message. Please try again.'
-            })
-        } finally {
-            setIsSubmitting(false)
-        }
+        await submitToApi(formData)
     }
 
     if (isSubmitted) {
@@ -163,7 +153,11 @@ export default function ContactForm({ className }: ContactFormProps) {
 
     return (
         <GlassmorphismCard className={cn('p-8', className)}>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <FormLoadingState 
+                loading={state.loading} 
+                loadingText="Sending your message..."
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Honeypot field - hidden from users */}
                 <input
                     type="text"
@@ -175,14 +169,18 @@ export default function ContactForm({ className }: ContactFormProps) {
                     autoComplete="off"
                 />
 
-                {errors.general && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
-                    >
-                        <p className="text-red-600 dark:text-red-400 text-sm">{errors.general}</p>
-                    </motion.div>
+                {(errors.general || state.error) && (
+                    <ErrorDisplay
+                        error={errors.general || state.error}
+                        title="Failed to Send Message"
+                        action={{
+                            label: 'Try Again',
+                            onClick: () => {
+                                setErrors({})
+                                handleSubmit({ preventDefault: () => {} } as React.FormEvent)
+                            }
+                        }}
+                    />
                 )}
 
                 <div className="grid grid-cols-1 tablet:grid-cols-2 gap-6">
@@ -207,7 +205,7 @@ export default function ContactForm({ className }: ContactFormProps) {
                                     : 'border-border-glass dark:border-border-glass-dark'
                             )}
                             placeholder="Your full name"
-                            disabled={isSubmitting}
+                            disabled={state.loading}
                         />
                         {errors.name && (
                             <motion.p
@@ -241,7 +239,7 @@ export default function ContactForm({ className }: ContactFormProps) {
                                     : 'border-border-glass dark:border-border-glass-dark'
                             )}
                             placeholder="your.email@example.com"
-                            disabled={isSubmitting}
+                            disabled={state.loading}
                         />
                         {errors.email && (
                             <motion.p
@@ -276,7 +274,7 @@ export default function ContactForm({ className }: ContactFormProps) {
                                 : 'border-border-glass dark:border-border-glass-dark'
                         )}
                         placeholder="What's this about?"
-                        disabled={isSubmitting}
+                        disabled={state.loading}
                     />
                     {errors.subject && (
                         <motion.p
@@ -310,7 +308,7 @@ export default function ContactForm({ className }: ContactFormProps) {
                                 : 'border-border-glass dark:border-border-glass-dark'
                         )}
                         placeholder="Tell me about your project, question, or how I can help you..."
-                        disabled={isSubmitting}
+                        disabled={state.loading}
                     />
                     {errors.message && (
                         <motion.p
@@ -332,14 +330,15 @@ export default function ContactForm({ className }: ContactFormProps) {
                         type="submit"
                         variant="primary"
                         size="lg"
-                        loading={isSubmitting}
-                        disabled={isSubmitting}
+                        loading={state.loading}
+                        disabled={state.loading}
                         className="min-w-[140px] touch-manipulation min-h-[44px]"
                     >
-                        {isSubmitting ? 'Sending...' : 'Send Message'}
+                        {state.loading ? 'Sending...' : 'Send Message'}
                     </Button>
                 </div>
             </form>
+            </FormLoadingState>
         </GlassmorphismCard>
     )
 }

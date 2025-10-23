@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AuthProvider } from "@/components/providers";
+import { AppProviders } from "@/components/providers";
 import { WebVitals } from "@/components/analytics/WebVitals";
 import { generatePersonSchema, generateWebsiteSchema } from "@/lib/seo";
 import "./globals.css";
@@ -122,9 +122,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
+        <AppProviders>
           {children}
-        </AuthProvider>
+        </AppProviders>
         <WebVitals />
       </body>
     </html>
