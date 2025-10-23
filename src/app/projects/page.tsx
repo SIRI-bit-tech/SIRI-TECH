@@ -3,22 +3,15 @@ import { prisma } from '@/lib/prisma'
 import PublicLayout from '@/components/layouts/PublicLayout'
 import { ProjectGallery } from '@/components/projects'
 import GlassmorphismCard from '@/components/glassmorphism/GlassmorphismCard'
+import { generateMetadata as generateSEOMetadata, generateStructuredData } from '@/lib/seo'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = generateSEOMetadata({
   title: 'Projects | SIRI DEV - Full-Stack Developer Portfolio',
   description: 'Explore my portfolio of full-stack web development projects. Built with modern technologies like React, Next.js, TypeScript, and more.',
   keywords: ['projects', 'portfolio', 'web development', 'React', 'Next.js', 'TypeScript', 'full-stack'],
-  openGraph: {
-    title: 'Projects | SIRI DEV Portfolio',
-    description: 'Explore my portfolio of full-stack web development projects.',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Projects | SIRI DEV Portfolio',
-    description: 'Explore my portfolio of full-stack web development projects.',
-  },
-}
+  url: '/projects',
+  type: 'website',
+})
 
 async function getProjects() {
   try {
@@ -78,24 +71,22 @@ export default async function ProjectsPage() {
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "CollectionPage",
-                "name": "SIRI DEV Projects Portfolio",
-                "description": "A collection of full-stack web development projects by SIRI DEV",
-                "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'}/projects`,
-                "mainEntity": {
-                  "@type": "ItemList",
-                  "numberOfItems": projects.length,
-                  "itemListElement": projects.map((project, index) => ({
-                    "@type": "CreativeWork",
-                    "position": index + 1,
-                    "name": project.title,
-                    "description": project.shortDescription,
-                    "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'}/projects/${project.slug}`,
-                    "dateCreated": project.createdAt.toISOString(),
-                    "keywords": project.technologies.join(", "),
-                    ...(project.liveUrl && { "sameAs": project.liveUrl }),
+              __html: generateStructuredData('CollectionPage', {
+                name: 'SIRI DEV Projects Portfolio',
+                description: 'A collection of full-stack web development projects by SIRI DEV',
+                url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'}/projects`,
+                mainEntity: {
+                  '@type': 'ItemList',
+                  numberOfItems: projects.length,
+                  itemListElement: projects.map((project, index) => ({
+                    '@type': 'CreativeWork',
+                    position: index + 1,
+                    name: project.title,
+                    description: project.shortDescription,
+                    url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'}/projects/${project.slug}`,
+                    dateCreated: project.createdAt.toISOString(),
+                    keywords: project.technologies.join(', '),
+                    ...(project.liveUrl && { sameAs: project.liveUrl }),
                   }))
                 }
               })

@@ -2,16 +2,15 @@ import { Metadata } from 'next'
 import PublicLayout from '@/components/layouts/PublicLayout'
 import ContactForm from '@/components/ContactForm'
 import { Mail, MapPin, Phone } from 'lucide-react'
+import { generateMetadata as generateSEOMetadata, generateStructuredData } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Contact | Portfolio',
-  description: 'Get in touch with me for project collaborations, job opportunities, or any questions you might have.',
-  openGraph: {
-    title: 'Contact | Portfolio',
-    description: 'Get in touch with me for project collaborations, job opportunities, or any questions you might have.',
-    type: 'website',
-  },
-}
+export const metadata: Metadata = generateSEOMetadata({
+  title: 'Contact SIRI DEV - Get In Touch',
+  description: 'Contact SIRI DEV for project collaborations, job opportunities, freelance work, or technical consultations. Available for remote work worldwide.',
+  keywords: ['contact', 'hire developer', 'freelance', 'collaboration', 'job opportunities', 'full-stack developer', 'React developer', 'remote work'],
+  url: '/contact',
+  type: 'website',
+})
 
 export default function ContactPage() {
   return (
@@ -142,6 +141,31 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+    
+    {/* JSON-LD Structured Data */}
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: generateStructuredData('ContactPage', {
+          name: 'Contact SIRI DEV',
+          description: 'Contact page for SIRI DEV - Full-Stack Developer',
+          url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://siridev.com'}/contact`,
+          mainEntity: {
+            '@type': 'Person',
+            name: 'SIRI DEV',
+            jobTitle: 'Full-Stack Developer',
+            email: 'hello@portfolio.com', // Replace with actual email
+            contactPoint: {
+              '@type': 'ContactPoint',
+              contactType: 'professional',
+              email: 'hello@portfolio.com', // Replace with actual email
+              availableLanguage: ['English'],
+              areaServed: 'Worldwide'
+            }
+          }
+        })
+      }}
+    />
     </PublicLayout>
   )
 }
