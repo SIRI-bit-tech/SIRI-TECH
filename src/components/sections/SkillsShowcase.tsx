@@ -2,33 +2,35 @@
 
 import { motion } from 'framer-motion'
 import GlassmorphismCard from '../glassmorphism/GlassmorphismCard'
+import { Laptop, Atom, Code, Type, Palette, Shapes, Server, Database, Link, GitBranch, Boxes, Triangle, Brush } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 interface Skill {
   name: string
   category: string
   level: number
-  icon: string
+  icon: ReactNode
 }
 
 const skills: Skill[] = [
   // Frontend
-  { name: 'React', category: 'Frontend', level: 95, icon: '⚛️' },
-  { name: 'Next.js', category: 'Frontend', level: 90, icon: '🔺' },
-  { name: 'TypeScript', category: 'Frontend', level: 88, icon: '📘' },
-  { name: 'Tailwind CSS', category: 'Frontend', level: 92, icon: '🎨' },
-  { name: 'Framer Motion', category: 'Frontend', level: 85, icon: '🎭' },
-  
+  { name: 'React', category: 'Frontend', level: 95, icon: <Atom className="w-4 h-4" /> },
+  { name: 'Next.js', category: 'Frontend', level: 90, icon: <Code className="w-4 h-4" /> },
+  { name: 'TypeScript', category: 'Frontend', level: 88, icon: <Type className="w-4 h-4" /> },
+  { name: 'Tailwind CSS', category: 'Frontend', level: 92, icon: <Palette className="w-4 h-4" /> },
+  { name: 'Framer Motion', category: 'Frontend', level: 85, icon: <Shapes className="w-4 h-4" /> },
+
   // Backend
-  { name: 'Node.js', category: 'Backend', level: 87, icon: '🟢' },
-  { name: 'PostgreSQL', category: 'Backend', level: 83, icon: '🐘' },
-  { name: 'Prisma', category: 'Backend', level: 89, icon: '🔷' },
-  { name: 'REST APIs', category: 'Backend', level: 91, icon: '🔗' },
-  
+  { name: 'Node.js', category: 'Backend', level: 87, icon: <Server className="w-4 h-4" /> },
+  { name: 'PostgreSQL', category: 'Backend', level: 83, icon: <Database className="w-4 h-4" /> },
+  { name: 'Prisma', category: 'Backend', level: 89, icon: <Shapes className="w-4 h-4" /> },
+  { name: 'REST APIs', category: 'Backend', level: 91, icon: <Link className="w-4 h-4" /> },
+
   // Tools & Others
-  { name: 'Git', category: 'Tools', level: 93, icon: '📚' },
-  { name: 'Docker', category: 'Tools', level: 78, icon: '🐳' },
-  { name: 'Vercel', category: 'Tools', level: 86, icon: '▲' },
-  { name: 'Figma', category: 'Design', level: 82, icon: '🎨' },
+  { name: 'Git', category: 'Tools', level: 93, icon: <GitBranch className="w-4 h-4" /> },
+  { name: 'Docker', category: 'Tools', level: 78, icon: <Boxes className="w-4 h-4" /> },
+  { name: 'Vercel', category: 'Tools', level: 86, icon: <Triangle className="w-4 h-4" /> },
+  { name: 'Figma', category: 'Design', level: 82, icon: <Brush className="w-4 h-4" /> },
 ]
 
 const categories = ['Frontend', 'Backend', 'Tools', 'Design']
@@ -85,23 +87,24 @@ const SkillsShowcase = () => {
               className="inline-block mb-4"
               whileHover={{ scale: 1.05 }}
             >
-              <GlassmorphismCard 
-                variant="light" 
+              <GlassmorphismCard
+                variant="light"
                 className="px-6 py-3 inline-block"
                 animate={false}
               >
-                <span className="text-primary-600 dark:text-primary-400 font-medium">
-                  💻 Skills & Technologies
+                <span className="text-primary-600 dark:text-primary-400 font-medium inline-flex items-center gap-2">
+                  <Laptop className="h-4 w-4" />
+                  Skills & Technologies
                 </span>
               </GlassmorphismCard>
             </motion.div>
-            
+
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
               Technical Expertise
             </h2>
-            
+
             <p className="max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-400">
-              A comprehensive toolkit of modern technologies and frameworks that I use to build 
+              A comprehensive toolkit of modern technologies and frameworks that I use to build
               exceptional digital experiences and robust applications.
             </p>
           </motion.div>
@@ -110,7 +113,7 @@ const SkillsShowcase = () => {
           <div className="space-y-12">
             {categories.map((category, categoryIndex) => {
               const categorySkills = skills.filter(skill => skill.category === category)
-              
+
               return (
                 <motion.div
                   key={category}
@@ -120,7 +123,7 @@ const SkillsShowcase = () => {
                   <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 text-center">
                     {category}
                   </h3>
-                  
+
                   <motion.div
                     className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
                     variants={containerVariants}
@@ -129,13 +132,13 @@ const SkillsShowcase = () => {
                       <motion.div
                         key={skill.name}
                         variants={skillVariants}
-                        whileHover={{ 
+                        whileHover={{
                           scale: 1.05,
                           transition: { duration: 0.2 }
                         }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <GlassmorphismCard 
+                        <GlassmorphismCard
                           variant="medium"
                           className="p-4 text-center group cursor-pointer"
                           hover={false}
@@ -144,19 +147,19 @@ const SkillsShowcase = () => {
                             {/* Icon */}
                             <motion.div
                               className="text-3xl"
-                              whileHover={{ 
+                              whileHover={{
                                 rotate: [0, -10, 10, -10, 0],
                                 transition: { duration: 0.5 }
                               }}
                             >
                               {skill.icon}
                             </motion.div>
-                            
+
                             {/* Skill Name */}
                             <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
                               {skill.name}
                             </h4>
-                            
+
                             {/* Progress Bar */}
                             <div className="space-y-2">
                               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -164,8 +167,8 @@ const SkillsShowcase = () => {
                                   className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full"
                                   initial={{ width: 0 }}
                                   whileInView={{ width: `${skill.level}%` }}
-                                  transition={{ 
-                                    duration: 1.5, 
+                                  transition={{
+                                    duration: 1.5,
                                     delay: categoryIndex * 0.2 + index * 0.1,
                                     ease: [0, 0, 0.2, 1] as const
                                   }}
@@ -191,8 +194,8 @@ const SkillsShowcase = () => {
             variants={itemVariants}
             className="mt-16 text-center"
           >
-            <GlassmorphismCard 
-              variant="light" 
+            <GlassmorphismCard
+              variant="light"
               className="p-8 max-w-4xl mx-auto"
               animate={false}
             >
@@ -200,8 +203,8 @@ const SkillsShowcase = () => {
                 <span className="font-semibold text-gray-800 dark:text-gray-200">
                   Continuous Learning:
                 </span>{' '}
-                I'm always exploring new technologies and staying up-to-date with the latest 
-                industry trends. Currently diving deeper into AI integration, advanced React patterns, 
+                I'm always exploring new technologies and staying up-to-date with the latest
+                industry trends. Currently diving deeper into AI integration, advanced React patterns,
                 and cloud architecture.
               </p>
             </GlassmorphismCard>

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Button from '../ui/Button'
 import GlassmorphismCard from '../glassmorphism/GlassmorphismCard'
+import { Hand } from 'lucide-react'
 
 const HeroSection = () => {
   const containerVariants = {
@@ -49,13 +50,13 @@ const HeroSection = () => {
           animate="animate"
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-200/20 rounded-full blur-3xl"
           variants={floatingVariants}
           animate="animate"
           transition={{ delay: 2 }}
         />
         <motion.div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-100/10 to-purple-100/10 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary-100/10 to-accent-100/10 rounded-full blur-3xl"
           variants={floatingVariants}
           animate="animate"
           transition={{ delay: 4 }}
@@ -82,8 +83,9 @@ const HeroSection = () => {
                 className="px-6 py-3 inline-block"
                 animate={false}
               >
-                <span className="text-primary-600 dark:text-primary-400 font-medium text-lg">
-                  👋 Hello, I'm
+                <span className="text-primary-600 dark:text-primary-400 font-medium text-lg inline-flex items-center gap-2">
+                  <Hand className="h-4 w-4" />
+                  Hello, I'm
                 </span>
               </GlassmorphismCard>
             </motion.div>
@@ -93,7 +95,7 @@ const HeroSection = () => {
               className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white"
               variants={itemVariants}
             >
-              <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
                 John Doe
               </span>
             </motion.h1>
