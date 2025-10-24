@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -21,34 +23,56 @@ const nextConfig: NextConfig = {
     serverComponentsExternalPackages: ["@prisma/client"],
     optimizePackageImports: ['lucide-react', 'd3', 'framer-motion'],
   },
+  
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
   
-  // SEO and performance headers
+  // Production-specific optimizations
+  ...(isProduction && {
+    output: 'standalone',
+    swcMinify: true,
+    compiler: {
+      removeConsole: {
+        exclude: ['error', 'warn'],
+      },
+    },
+  }),
+  
+  // Security and performance headers
   async headers() {
+    const securityHeaders = [
+      {
+        key: 'X-Frame-Options',
+        value: 'DENY',
+      },
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+      {
+        key: 'Permissions-Policy',
+        value: 'camera=(), microphone=(), geolocation=()',
+      },
+    ];
+
+    // Add HSTS in production
+    if (isProduction) {
+      securityHeaders.push({
+        key: 'Strict-Transport-Security',
+        value: 'max-age=31536000; includeSubDomains; preload',
+      });
+    }
+
     return [
       {
         source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
-          },
-        ],
+        headers: securityHeaders,
       },
       {
         source: '/api/(.*)',
@@ -85,6 +109,21 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
     ];
+  },
+
+  // Environment validation
+  async rewrites() {
+    // Validate environment on startup
+    if (isProduction) {
+      try {
+        const { validateEnvironment } = await import('./src/lib/config/production');
+        validateEnvironment();
+      } catch (error) {
+        console.error('Environment validation failed:', error);
+        process.exit(1);
+      }
+    }
+    return [];
   },
 };
 
