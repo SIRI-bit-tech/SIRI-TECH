@@ -20,14 +20,21 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
-    serverComponentsExternalPackages: ["@prisma/client"],
     optimizePackageImports: ['lucide-react', 'd3', 'framer-motion'],
   },
+
+  // Allow importing server-only packages in the server runtime
+  serverExternalPackages: ["@prisma/client"],
   
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
+
+  // Turbopack root to silence workspace root warning in multi-lockfile environments
+  turbopack: {
+    root: __dirname,
+  },
   
   // Production-specific optimizations
   ...(isProduction && {
@@ -80,15 +87,6 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'no-store, max-age=0',
-          },
-        ],
-      },
-      {
-        source: '/(.*\\.(ico|png|jpg|jpeg|gif|webp|svg|css|js))',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

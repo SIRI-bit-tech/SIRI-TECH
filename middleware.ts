@@ -1,20 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { analyticsMiddleware } from "@/lib/analytics-middleware"
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Run analytics tracking for public pages (non-admin, non-API)
-  if (
-    !pathname.startsWith("/admin") &&
-    !pathname.startsWith("/api") &&
-    !pathname.startsWith("/_next") &&
-    !pathname.startsWith("/favicon")
-  ) {
-    // Track analytics for public pages
-    await analyticsMiddleware(request)
-  }
+  // Analytics tracking is disabled in Edge middleware to avoid Node-only imports (Prisma, UA parsing)
+  // If needed, implement client-side beaconing to an API route instead.
 
   // Skip auth middleware for public routes and API auth routes
   if (

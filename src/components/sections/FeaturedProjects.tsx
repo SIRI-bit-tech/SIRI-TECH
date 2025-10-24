@@ -1,16 +1,29 @@
+'use client'
+
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import GlassmorphismCard from '../glassmorphism/GlassmorphismCard'
 import Button from '../ui/Button'
-import { prisma } from '@/lib/prisma'
 import { Rocket, FolderKanban, Github } from 'lucide-react'
 
-const FeaturedProjects = async () => {
-  const projects = await prisma.project.findMany({
-    where: { featured: true, status: 'PUBLISHED' },
-    orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
-  })
+// Define a minimal Project shape for client rendering
+interface ProjectItem {
+  id: string
+  title: string
+  shortDescription: string
+  technologies: string[]
+  images: string[]
+  liveUrl?: string | null
+  githubUrl?: string | null
+  featured: boolean
+  slug: string
+}
 
+interface FeaturedProjectsProps {
+  projects: ProjectItem[]
+}
+
+const FeaturedProjects = ({ projects }: FeaturedProjectsProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

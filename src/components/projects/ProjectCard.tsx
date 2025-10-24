@@ -56,7 +56,7 @@ const ProjectCard = ({ project, index = 0 }: ProjectCardProps) => {
         hover={false}
       >
         {/* Project Image */}
-        <div className="relative h-48 xs:h-52 sm:h-56 tablet:h-48 lg:h-56 bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/20 dark:to-purple-900/20 overflow-hidden">
+        <div className="relative h-48 xs:h-52 sm:h-56 tablet:h-48 lg:h-56 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/20 dark:to-accent-900/20 overflow-hidden">
           {project.images && project.images.length > 0 ? (
             <motion.div
               className="relative w-full h-full"
@@ -73,7 +73,7 @@ const ProjectCard = ({ project, index = 0 }: ProjectCardProps) => {
             </motion.div>
           ) : (
             <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-purple-500/20"
+              className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20"
               whileHover={{ scale: 1.1 }}
               transition={{ duration: 0.3 }}
             />

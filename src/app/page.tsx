@@ -19,7 +19,7 @@ async function getFeaturedProjects() {
         status: 'PUBLISHED',
         featured: true
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
       take: 6
     })
     return projects
@@ -58,7 +58,7 @@ export default async function Home() {
     <PublicLayout>
       <HeroSection />
       <SkillsShowcase />
-      <FeaturedProjects />
+      <FeaturedProjects projects={featuredProjects} />
       
       {/* JSON-LD Structured Data */}
       <script
