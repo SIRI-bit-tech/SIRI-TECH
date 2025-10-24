@@ -285,7 +285,11 @@
   - Add monitoring and logging for production environment
   - _Requirements: 6.5_
 
-- [ ] 20. Final testing and production optimization
+- [-] 20. Final testing and production optimization
+
+
+
+  - Write and end to end test with Jest. And don't touch any code to affect what has been there
   - Perform comprehensive testing of all features and user flows
   - Optimize bundle sizes and implement code splitting
   - Test email functionality and file upload processes
