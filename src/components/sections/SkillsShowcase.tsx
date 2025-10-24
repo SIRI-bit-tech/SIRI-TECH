@@ -125,7 +125,7 @@ const SkillsShowcase = () => {
                   </h3>
 
                   <motion.div
-                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+                    className="grid grid-cols-2 xs:grid-cols-3 tablet:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 xs:gap-4"
                     variants={containerVariants}
                   >
                     {categorySkills.map((skill, index) => (
@@ -140,7 +140,7 @@ const SkillsShowcase = () => {
                       >
                         <GlassmorphismCard
                           variant="medium"
-                          className="p-4 text-center group cursor-pointer"
+                          className="p-3 xs:p-4 text-center group cursor-pointer touch-manipulation"
                           hover={false}
                         >
                           <div className="space-y-3">
@@ -156,7 +156,7 @@ const SkillsShowcase = () => {
                             </motion.div>
 
                             {/* Skill Name */}
-                            <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                            <h4 className="font-semibold text-gray-900 dark:text-white text-xs xs:text-sm">
                               {skill.name}
                             </h4>
 

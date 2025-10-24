@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import GlassmorphismCard from '../glassmorphism/GlassmorphismCard'
 import Button from '../ui/Button'
 import { prisma } from '@/lib/prisma'
@@ -222,13 +223,15 @@ const FeaturedProjects = async () => {
             variants={itemVariants}
             className="text-center mt-12"
           >
-            <Button
-              variant="glass"
-              size="lg"
-              className="min-w-[200px]"
-            >
-              View All Projects
-            </Button>
+            <Link href="/projects">
+              <Button
+                variant="glass"
+                size="lg"
+                className="min-w-[200px]"
+              >
+                View All Projects
+              </Button>
+            </Link>
           </motion.div>
         </motion.div>
       </div>

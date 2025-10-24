@@ -120,10 +120,11 @@ const Navigation = ({
                 variant="ghost"
                 size="sm"
                 onClick={toggleMobileMenu}
-                className="inline-flex items-center justify-center p-2"
+                className="inline-flex items-center justify-center p-3 min-h-[44px] min-w-[44px] touch-manipulation"
                 animate={false}
+                aria-label={isOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isOpen}
               >
-                <span className="sr-only">Open main menu</span>
                 <motion.div
                   animate={isOpen ? 'open' : 'closed'}
                   className="w-6 h-6 flex flex-col justify-center items-center"
@@ -174,13 +175,13 @@ const Navigation = ({
                 animate={false}
                 hover={false}
               >
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {items.map((item, index) => (
                     <motion.a
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        'block px-3 py-2 rounded-md text-base font-medium transition-colors',
+                        'block px-4 py-3 rounded-lg text-base font-medium transition-colors touch-manipulation min-h-[44px] flex items-center',
                         item.active
                           ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
                           : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800'

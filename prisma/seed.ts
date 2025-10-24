@@ -1,10 +1,23 @@
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Explicitly load .env from root directory
+config({ path: resolve(__dirname, '../.env') })
+
 import { PrismaClient } from '@prisma/client'
 import { hashPassword } from '../src/lib/password'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL
+    }
+  }
+})
 
 async function main() {
   console.log('🌱 Seeding database...')
+  console.log('Database URL exists:', !!process.env.DATABASE_URL)
 
   // Create admin user if it doesn't exist
   const existingAdmin = await prisma.user.findFirst({
@@ -23,7 +36,6 @@ async function main() {
         role: 'ADMIN',
       },
     })
-
     console.log('✅ Created admin user:', admin.email)
   } else {
     console.log('ℹ️  Admin user already exists')
@@ -49,7 +61,6 @@ async function main() {
         },
       },
     })
-
     console.log('✅ Created default profile')
   } else {
     console.log('ℹ️  Profile already exists')

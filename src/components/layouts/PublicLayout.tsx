@@ -1,7 +1,9 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import Navigation, { NavigationItem } from '../ui/Navigation'
+import MobileNavigation, { MobileNavigationItem } from '../ui/MobileNavigation'
 import Footer from './Footer'
 
 interface PublicLayoutProps {
@@ -9,15 +11,25 @@ interface PublicLayoutProps {
   className?: string
 }
 
-const navigationItems: NavigationItem[] = [
-  { label: 'Home', href: '/', active: true },
-  { label: 'Projects', href: '/projects' },
-  { label: 'About', href: '/about' },
-  { label: 'Resume', href: '/resume' },
-  { label: 'Contact', href: '/contact' },
-]
-
 const PublicLayout = ({ children, className }: PublicLayoutProps) => {
+  const pathname = usePathname()
+  
+  const navigationItems: NavigationItem[] = [
+    { label: 'Home', href: '/', active: pathname === '/' },
+    { label: 'Projects', href: '/projects', active: pathname.startsWith('/projects') },
+    { label: 'About', href: '/about', active: pathname === '/about' },
+    { label: 'Resume', href: '/resume', active: pathname === '/resume' },
+    { label: 'Contact', href: '/contact', active: pathname === '/contact' },
+  ]
+
+  const mobileNavigationItems: MobileNavigationItem[] = [
+    { label: 'Home', href: '/', icon: '🏠', active: pathname === '/' },
+    { label: 'Projects', href: '/projects', icon: '💼', active: pathname.startsWith('/projects') },
+    { label: 'About', href: '/about', icon: '👤', active: pathname === '/about' },
+    { label: 'Resume', href: '/resume', icon: '📄', active: pathname === '/resume' },
+    { label: 'Contact', href: '/contact', icon: '📧', active: pathname === '/contact' },
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Navigation 
@@ -34,6 +46,9 @@ const PublicLayout = ({ children, className }: PublicLayoutProps) => {
       </main>
       
       <Footer />
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileNavigation items={mobileNavigationItems} />
     </div>
   )
 }

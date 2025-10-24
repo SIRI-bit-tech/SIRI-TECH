@@ -30,7 +30,7 @@ const Footer = () => {
           animate={false}
           hover={false}
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 tablet:grid-cols-3 gap-8">
             {/* Brand Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -95,7 +95,7 @@ const Footer = () => {
                   <motion.a
                     key={social.name}
                     href={social.href}
-                    className="w-10 h-10 rounded-full bg-glass-light dark:bg-glass-dark-medium backdrop-blur-sm border border-border-glass dark:border-border-glass-dark flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-glass-medium dark:hover:bg-glass-dark-heavy transition-all duration-200"
+                    className="w-12 h-12 rounded-full bg-glass-light dark:bg-glass-dark-medium backdrop-blur-sm border border-border-glass dark:border-border-glass-dark flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-glass-medium dark:hover:bg-glass-dark-heavy transition-all duration-200 touch-manipulation"
                     initial={{ opacity: 0, scale: 0.8 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     whileHover={{ scale: 1.1 }}
@@ -119,7 +119,7 @@ const Footer = () => {
             viewport={{ once: true }}
             className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700"
           >
-            <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+            <div className="flex flex-col xs:flex-row justify-between items-center space-y-4 xs:space-y-0">
               <p className="text-gray-500 dark:text-gray-400 text-sm">
                 © {currentYear} Portfolio. All rights reserved.
               </p>

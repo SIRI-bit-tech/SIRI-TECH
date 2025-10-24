@@ -1,3 +1,5 @@
 export { default as HeroSection } from './HeroSection'
 export { default as SkillsShowcase } from './SkillsShowcase'
 export { default as FeaturedProjects } from './FeaturedProjects'
+export { default as AboutContent } from './AboutContent'
+export { default as ResumeContent } from './ResumeContent'

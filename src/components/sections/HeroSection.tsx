@@ -41,7 +41,7 @@ const HeroSection = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 sm:pt-0">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -63,7 +63,7 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center"
           variants={containerVariants}
@@ -92,7 +92,7 @@ const HeroSection = () => {
 
             {/* Name */}
             <motion.h1 
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white"
+              className="text-4xl xs:text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight"
               variants={itemVariants}
             >
               <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
@@ -102,7 +102,7 @@ const HeroSection = () => {
 
             {/* Title */}
             <motion.h2 
-              className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-700 dark:text-gray-300"
+              className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-700 dark:text-gray-300"
               variants={itemVariants}
             >
               Full-Stack Developer
@@ -110,7 +110,7 @@ const HeroSection = () => {
 
             {/* Description */}
             <motion.p 
-              className="max-w-3xl mx-auto text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed"
+              className="max-w-3xl mx-auto text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed px-4 sm:px-0"
               variants={itemVariants}
             >
               I craft exceptional digital experiences with modern web technologies. 
@@ -120,20 +120,20 @@ const HeroSection = () => {
 
             {/* CTA Buttons */}
             <motion.div 
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8"
+              className="flex flex-col xs:flex-row gap-4 justify-center items-center pt-8 px-4 sm:px-0"
               variants={itemVariants}
             >
               <Button
                 variant="primary"
                 size="lg"
-                className="w-full sm:w-auto min-w-[200px]"
+                className="w-full xs:w-auto min-w-[200px] touch-manipulation"
               >
                 View My Work
               </Button>
               <Button
                 variant="glass"
                 size="lg"
-                className="w-full sm:w-auto min-w-[200px]"
+                className="w-full xs:w-auto min-w-[200px] touch-manipulation"
               >
                 Get In Touch
               </Button>

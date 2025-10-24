@@ -25,18 +25,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
     const variantClasses = {
-      primary: 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg focus:ring-primary-500',
+      primary: 'bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg focus:ring-purple-500',
       secondary: 'bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg focus:ring-gray-500',
       ghost: 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-gray-500',
-      glass: 'bg-glass-medium backdrop-blur-md border border-border-glass hover:bg-glass-heavy text-gray-900 dark:text-white shadow-glass hover:shadow-glass-lg focus:ring-primary-500',
-      outline: 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-gray-500',
+      glass: 'bg-glass-medium backdrop-blur-md border border-border-glass hover:bg-glass-heavy text-gray-900 dark:text-white shadow-glass hover:shadow-glass-lg focus:ring-purple-500',
+      outline: 'border border-slate-600/50 hover:bg-slate-700/50 text-slate-300 hover:text-white focus:ring-purple-500',
     }
 
     const sizeClasses = {
-      sm: 'px-3 py-1.5 text-sm rounded-md',
-      md: 'px-4 py-2 text-sm rounded-lg',
-      lg: 'px-6 py-3 text-base rounded-lg',
-      xl: 'px-8 py-4 text-lg rounded-xl',
+      sm: 'px-3 py-2 text-sm rounded-md min-h-[40px]',
+      md: 'px-4 py-2.5 text-sm rounded-lg min-h-[44px]',
+      lg: 'px-6 py-3 text-base rounded-lg min-h-[48px]',
+      xl: 'px-8 py-4 text-lg rounded-xl min-h-[52px]',
     }
 
     const buttonClasses = cn(
