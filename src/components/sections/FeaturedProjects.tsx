@@ -1,60 +1,16 @@
-'use client'
-
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import GlassmorphismCard from '../glassmorphism/GlassmorphismCard'
 import Button from '../ui/Button'
+import { prisma } from '@/lib/prisma'
+import { Rocket, FolderKanban, Github } from 'lucide-react'
 
-interface Project {
-  id: string
-  title: string
-  description: string
-  shortDescription: string
-  technologies: string[]
-  image: string
-  liveUrl?: string
-  githubUrl?: string
-  featured: boolean
-}
+const FeaturedProjects = async () => {
+  const projects = await prisma.project.findMany({
+    where: { featured: true, status: 'PUBLISHED' },
+    orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+  })
 
-// Mock data for featured projects
-const featuredProjects: Project[] = [
-  {
-    id: '1',
-    title: 'E-Commerce Platform',
-    description: 'A full-stack e-commerce solution built with Next.js, featuring real-time inventory management, secure payment processing, and an intuitive admin dashboard.',
-    shortDescription: 'Modern e-commerce platform with real-time features',
-    technologies: ['Next.js', 'TypeScript', 'Prisma', 'Stripe', 'Tailwind CSS'],
-    image: '/api/placeholder/600/400',
-    liveUrl: 'https://example.com',
-    githubUrl: 'https://github.com/example',
-    featured: true,
-  },
-  {
-    id: '2',
-    title: 'Task Management App',
-    description: 'A collaborative task management application with real-time updates, team collaboration features, and advanced project tracking capabilities.',
-    shortDescription: 'Collaborative productivity tool with real-time sync',
-    technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB', 'Material-UI'],
-    image: '/api/placeholder/600/400',
-    liveUrl: 'https://example.com',
-    githubUrl: 'https://github.com/example',
-    featured: true,
-  },
-  {
-    id: '3',
-    title: 'Analytics Dashboard',
-    description: 'A comprehensive analytics dashboard with interactive charts, real-time data visualization, and customizable reporting features for business intelligence.',
-    shortDescription: 'Interactive analytics with beautiful visualizations',
-    technologies: ['Vue.js', 'D3.js', 'Express', 'PostgreSQL', 'Chart.js'],
-    image: '/api/placeholder/600/400',
-    liveUrl: 'https://example.com',
-    githubUrl: 'https://github.com/example',
-    featured: true,
-  },
-]
-
-const FeaturedProjects = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -110,8 +66,9 @@ const FeaturedProjects = () => {
                 className="px-6 py-3 inline-block"
                 animate={false}
               >
-                <span className="text-primary-600 dark:text-primary-400 font-medium">
-                  🚀 Featured Work
+                <span className="text-primary-600 dark:text-primary-400 font-medium inline-flex items-center gap-2">
+                  <Rocket className="h-4 w-4" />
+                  Featured Work
                 </span>
               </GlassmorphismCard>
             </motion.div>
@@ -131,7 +88,16 @@ const FeaturedProjects = () => {
             className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"
             variants={containerVariants}
           >
-            {featuredProjects.map((project, index) => (
+            {projects.length === 0 && (
+              <div className="col-span-full">
+                <GlassmorphismCard variant="light" className="p-8 text-center">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    No featured projects yet. Please add and mark some projects as featured in the admin dashboard.
+                  </p>
+                </GlassmorphismCard>
+              </div>
+            )}
+            {projects.map((project, index) => (
               <motion.div
                 key={project.id}
                 variants={cardVariants}
@@ -144,22 +110,22 @@ const FeaturedProjects = () => {
                   hover={false}
                 >
                   {/* Project Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/20 dark:to-purple-900/20 overflow-hidden">
+                  <div className="relative h-48 bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/20 dark:to-accent-900/20 overflow-hidden">
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-purple-500/20"
+                      className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20"
                       whileHover={{ scale: 1.1 }}
                       transition={{ duration: 0.3 }}
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <motion.div
-                        className="text-6xl opacity-50"
+                        className="opacity-50"
                         whileHover={{ 
                           rotate: [0, -5, 5, -5, 0],
                           scale: 1.1,
                           transition: { duration: 0.5 }
                         }}
                       >
-                        {index === 0 ? '🛒' : index === 1 ? '📋' : '📊'}
+                        <FolderKanban className="w-16 h-16" />
                       </motion.div>
                     </div>
                     
@@ -242,7 +208,7 @@ const FeaturedProjects = () => {
                           size="sm"
                           className="px-3"
                         >
-                          <span className="text-lg">📚</span>
+                          <Github className="w-5 h-5" />
                         </Button>
                       )}
                     </div>

@@ -2,15 +2,16 @@
 
 import { motion } from 'framer-motion'
 import GlassmorphismCard from '../glassmorphism/GlassmorphismCard'
+import { Github, Linkedin, Twitter, Mail } from 'lucide-react'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
 
   const socialLinks = [
-    { name: 'GitHub', href: '#', icon: '🔗' },
-    { name: 'LinkedIn', href: '#', icon: '💼' },
-    { name: 'Twitter', href: '#', icon: '🐦' },
-    { name: 'Email', href: 'mailto:contact@example.com', icon: '📧' },
+    { name: 'GitHub', href: '#', icon: <Github className="w-5 h-5" /> },
+    { name: 'LinkedIn', href: '#', icon: <Linkedin className="w-5 h-5" /> },
+    { name: 'Twitter', href: '#', icon: <Twitter className="w-5 h-5" /> },
+    { name: 'Email', href: 'mailto:contact@example.com', icon: <Mail className="w-5 h-5" /> },
   ]
 
   const footerLinks = [
@@ -103,7 +104,7 @@ const Footer = () => {
                     viewport={{ once: true }}
                     title={social.name}
                   >
-                    <span className="text-lg">{social.icon}</span>
+                    {social.icon}
                   </motion.a>
                 ))}
               </div>
